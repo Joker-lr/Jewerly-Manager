@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="1ca31984-980d-44d5-9ee1-ed4781f97ba1" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/Check.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Exhibition.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SettingExhibition.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/TerminalSettingSet.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TerminalSettingRelated.js" beforeDir="false" afterPath="$PROJECT_DIR$/TerminalSettingRelated.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ViewRelated.js" beforeDir="false" afterPath="$PROJECT_DIR$/ViewRelated.js" afterDir="false" />
-    </list>
+    <list default="true" id="1ca31984-980d-44d5-9ee1-ed4781f97ba1" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -25,8 +17,8 @@
       <file leaf-file-name="ReceiveData.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ReceiveData.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="133">
-              <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+            <state relative-caret-position="95">
+              <caret line="5" column="4" lean-forward="true" selection-start-line="5" selection-start-column="4" selection-end-line="5" selection-end-column="4" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -153,6 +145,7 @@
         <option value="$PROJECT_DIR$/SettingExhibition.js" />
         <option value="$PROJECT_DIR$/TerminalSettingSet.js" />
         <option value="$PROJECT_DIR$/TerminalSettingRelated.js" />
+        <option value="$PROJECT_DIR$/ReceiveData.js" />
       </list>
     </option>
   </component>
@@ -223,12 +216,12 @@
       <updated>1530451669572</updated>
       <workItem from="1530451672314" duration="785000" />
       <workItem from="1530452663441" duration="818000" />
-      <workItem from="1530494754670" duration="1492000" />
+      <workItem from="1530494754670" duration="3239000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3095000" />
+    <option name="totallyTimeSpent" value="4842000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -424,8 +417,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ReceiveData.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="133">
-          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+        <state relative-caret-position="95">
+          <caret line="5" column="4" lean-forward="true" selection-start-line="5" selection-start-column="4" selection-end-line="5" selection-end-column="4" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
