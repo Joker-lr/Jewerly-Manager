@@ -1,0 +1,30 @@
+{
+  "name": "starry",
+  "version": "1.0.0",
+  "description": "koa study",
+  "main": "index.js",
+  "dependencies": {
+    "ejs": "^2.6.1",
+    "jsonwebtoken": "^8.3.0",
+    "koa": "^2.5.1",
+    "koa-body": "^2.5.0",
+    "koa-router": "^7.3.0",
+    "koa-session2": "^2.2.6",
+    "koa-static": "^4.0.2",
+    "mysql2": "^1.5.3",
+    "node-fetch": "^1.7.3",
+    "ws": "^5.2.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "zds.github.com"
+  },
+  "keywords": [
+    "starry"
+  ],
+  "author": "zds",
+  "license": "MIT"
+}
