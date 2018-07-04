@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+<title>珠宝展示</title>
+</head>
+
+<style>
+    h1, h2, h3 { font-family: "仿宋"; }
+</style>
+
+<body>
+    <% for (let user of users){ %>
+    <h1><%= user.ID %> : <%= user.Location %> <%= user.J_Type %> <%= user.EPC_Number %></h1>
+    <% } %>
+</body>
+
+</html>
