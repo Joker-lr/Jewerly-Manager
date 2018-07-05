@@ -4,12 +4,12 @@ const ejs = require('ejs');
 
 module.exports = {
   paraget: async (ctx, next) => {
-    console.log("paraset.");
+    console.log("paraget.");
     const [users] = await ctx.db.query(`SELECT * FROM J_EPC`);
     return ctx.body = ejs.render(ctx.view['JewerlyExibition'], {users});
   },
   paraset: async (ctx, next) => {
-    console.log("paraget.");
+    console.log("paraset.");
     const [users] = await ctx.db.query(`SELECT * FROM J_EPC`);
     let InsertLoc = users.length;
     let  addSql = `INSERT INTO J_EPC(ID,EPC_Number,J_Type,Location) VALUES(${InsertLoc},?,?,?)`;
