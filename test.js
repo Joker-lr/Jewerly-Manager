@@ -1,9 +1,17 @@
-const Koa = require('koa');
-const app = new Koa();
+var ejs = require("ejs");
+var Koa = require('koa');
+var app = new Koa();
 
-app.use(async ctx => {
-  ctx.body = 'Hello World';
-});
+//console.log(__dirname);
+app.context.view = {};
+str = require("fs").readFileSync(__dirname+"/public/test.html","utf8");  //先读文件
+app.context.view.str = str;
 
-app.listen(3000);
-console.log(`Server starry listening on port 3000...`)
+const main = async (ctx, next) => {
+    ctx.body = app.context.view.str;
+}
+
+app.use(main);
+app.listen(3000,function(){
+    console.log("server is running")
+})
