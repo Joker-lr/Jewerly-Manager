@@ -36,7 +36,7 @@
 <body>
 <div id="app">
     <el-container>
-        <el-header style="height: 100px; background-color: lightskyblue">珠宝盘点展示</el-header>
+        <el-header style="height: 100px; background-color: rgb(97, 190, 170); font-size: 50px">珠宝盘点展示</el-header>
         <el-container>
             <el-aside style="width:700px; height: 600px">
                 <el-container direction="vertical">
@@ -50,7 +50,7 @@
                                         <el-card :body-style="{ padding: '0px' }">
                                         <img src="/public/images/戒指.jpg" class="image">
                                         <div style="padding: 14px;">
-                                            <span>戒指<el-button type="text" class="button">数量</el-button></span>
+                                            <span>戒指{{ index }}<el-button type="text" class="button">数量{{ index }}</el-button></span>
                                         </div>
                                         </el-card>
                                     </el-col>
@@ -64,12 +64,12 @@
                 <el-header style="height: 60px">盘点结果变化记录</el-header>
                     <el-container v-for="logunit in logs" style="margin-top: 5px">
                         <el-aside style="width: 150px; height: 80px; text-align: center; 
-                        background-color: rgb(0, 195, 255)">记录时间{{ logunit }}</el-aside>
+                        background-color: rgb(0, 195, 255)">变动时间{{ logunit }}</el-aside>
                         <el-main>变动内容{{ logunit }}</el-main>
                     </el-container>
             </el-main>
         </el-container>
-        <el-footer><a type="text" href="http://www.designchn.com/">成都德杉科技有限公司</a></el-footer>
+        <el-footer style="background-color: rgb(230, 166, 121)"><a type="text" href="http://www.designchn.com/">成都德杉科技有限公司</a></el-footer>
     </el-container>
 
 </div>
