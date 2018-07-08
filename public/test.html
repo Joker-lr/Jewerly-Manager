@@ -11,21 +11,18 @@
     background-color: #B3C0D1;
     color: #333;
     text-align: center;
-    line-height: 60px;
   }
   
   .el-aside {
     background-color: #D3DCE6;
     color: #333;
     text-align: center;
-    /* line-height: 600px; */
   }
   
   .el-main {
     background-color: #E9EEF3;
     color: #333;
     text-align: center;
-    /* line-height: 600px; */
   }
   
   /* body > .el-container {
@@ -39,30 +36,40 @@
 <body>
 <div id="app">
     <el-container>
-        <el-header style="height: 100px">Header</el-header>
+        <el-header style="height: 100px; background-color: lightskyblue">珠宝盘点展示</el-header>
         <el-container>
-            <el-aside width="700px" style="height: 600px">
+            <el-aside style="width:700px; height: 600px">
                 <el-container direction="vertical">
-                <el-container v-for="m in message" style="margin: 15px">
-                    <el-aside width="200px" style="height: 200px">Aside</el-aside>
+                <el-container v-for="m in message" style="margin-top: 5px">
+                    <el-aside width="200px" style="height: 300px; background-color: rgb(0, 195, 255)">柜台{{ m }}</el-aside>
                     <el-container>
-                        <el-header style="height: 50px">Header</el-header>
-                        <el-main style="height: 150px">Main</el-main>
+                        <el-header style="height: 50px">总数量{{ m }}</el-header>
+                        <el-main style="height: 150px">
+                            <el-row>
+                                    <el-col :span="12" v-for="(o, index) in Jn" :key="o" >
+                                        <el-card :body-style="{ padding: '0px' }">
+                                        <img src="/public/images/戒指.jpg" class="image">
+                                        <div style="padding: 14px;">
+                                            <span>戒指<el-button type="text" class="button">数量</el-button></span>
+                                        </div>
+                                        </el-card>
+                                    </el-col>
+                            </el-row>
+                        </el-main>
                     </el-container>
                 </el-container>
                 </el-container>
             </el-aside>
-            <el-main style="height: 600px">
-                <el-container>
-                    <el-header style="height: 60px">Header</el-header>
-                    <el-container v-for="logunit in logs" style="margin: 15px">
-                        <el-asider width="200px" style="text-align: center">Aside</el-asider>
-                        <el-main>Main</el-main>
+            <el-main style="height: 600px; background-color: #D3DCE6">
+                <el-header style="height: 60px">盘点结果变化记录</el-header>
+                    <el-container v-for="logunit in logs" style="margin-top: 5px">
+                        <el-aside style="width: 150px; height: 80px; text-align: center; 
+                        background-color: rgb(0, 195, 255)">记录时间{{ logunit }}</el-aside>
+                        <el-main>变动内容{{ logunit }}</el-main>
                     </el-container>
-                </el-container>
             </el-main>
         </el-container>
-        <el-footer>Footer</el-footer>
+        <el-footer><a type="text" href="http://www.designchn.com/">成都德杉科技有限公司</a></el-footer>
     </el-container>
 
 </div>
@@ -77,8 +84,9 @@
     var app = new Vue({
     el: '#app',
     data: {
-        message: [1, 2] ,
-        logs: [1, 2, 3] 
+        message: [1, 2, 3, 4] ,
+        logs: [1, 2, 3, 4, 5, 6, 7] ,
+        Jn: [1, 2, 3, 4, 5, 6]
     }
     })
   </script>
