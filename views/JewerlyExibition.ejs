@@ -10,18 +10,19 @@
 </style>
 
 <body>
-
+    <ul>
     <% for (let user of users){ %>
         <% if (user.J_Type === '项链'){ %>
-            <h2><img src='/images/项链.jpg' alt='发生错误' align="middle" width="52" height="52"/> <%= user.ID %> : <%= user.Location %> <%= user.J_Type %> <%= user.EPC_Number %></h2>  
+            <li><img src='/images/项链.jpg' alt='发生错误' align="middle" width="52" height="52"/> <%= user.ID + 1 %> : <%= user.Location %> <%= user.J_Type %> <%= user.EPC_Number %></li>  
         <% } %>
         <% if (user.J_Type === '手镯'){ %>
-            <h2><img src='/images/手镯.jpg' alt='发生错误' align="middle" width="52" height="52"/> <%= user.ID %> : <%= user.Location %> <%= user.J_Type %> <%= user.EPC_Number %></h2>
+            <li><img src='/images/手镯.jpg' alt='发生错误' align="middle" width="52" height="52"/> <%= user.ID + 1 %> : <%= user.Location %> <%= user.J_Type %> <%= user.EPC_Number %></li>
         <% } %>
         <% if (user.J_Type === '戒指'){ %>
-            <h2><img src='/images/戒指.jpg' alt='发生错误' align="middle" width="52" height="52"/> <%= user.ID %> : <%= user.Location %> <%= user.J_Type %> <%= user.EPC_Number %></h2>
+            <li><img src='/images/戒指.jpg' alt='发生错误' align="middle" width="52" height="52"/> <%= user.ID + 1 %> : <%= user.Location %> <%= user.J_Type %> <%= user.EPC_Number %></li>
         <% } %>
     <% } %>
+    </ul>
 </body>
 
 </html>
