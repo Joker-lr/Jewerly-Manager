@@ -31,7 +31,8 @@
 
                     <div class="block" style="margin-top: 30px">
                             <span class="demonstration">单通道工作时间（秒）</span>
-                            <el-slider v-model="form.value2" show-input :max="30" :step="0.1" :min="1"></el-slider>
+                            <el-slider v-model="form.value2" show-input :max="30" :step="0.1" 
+                            :min="1"></el-slider>
                     </div>
 
                 </div>
@@ -47,7 +48,7 @@
                             </el-switch>
                     </div>
 
-                    <div class="block" style="margin-top: 30px">
+                    <div class="block" style="margin-top: 30px"  v-if="form.value3">
                             <span class="demonstration">盘点时间周期（秒）</span>
                             <el-slider v-model="form.value4" show-input :max="600" :min="20"></el-slider>
                     </div>

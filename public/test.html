@@ -35,24 +35,28 @@
 
 <body>
 <div id="app">
-    <el-container style="height: 900px">
-        <el-header style="height: 100px; background-color: rgb(97, 190, 170); font-size: 50px">珠宝盘点展示
-            <el-button type="primary" round v-on:click="open5" style="font-size: 30px">盘点</el-button>
+    <el-container style="height: 900px" v-loading="loading" 
+    element-loading-text="盘点中，请稍等" element-loading-background="rgba(0, 0, 0, 0.8)">
+        <el-header style="height: 100px; background-color: rgb(97, 190, 170); 
+        font-size: 50px">珠宝盘点展示
+            <el-button type="primary" round style="font-size: 30px" @click="inventory()">盘点</el-button>
         </el-header>
         <el-container>
             <el-aside style="width:800px">
                 <el-container direction="vertical">
-                <el-container v-for="m in message" style="margin-top: 5px">
-                    <el-aside width="200px" style="height: 300px; background-color: rgb(0, 195, 255)">柜台{{ m }}</el-aside>
+                <el-container v-for="m in counternumber" style="margin-top: 5px">
+                    <el-aside width="200px" style="height: 300px; font-size: 60px; line-height: 300px;
+                     background-color: rgb(0, 195, 255)">柜台{{ m }}</el-aside>
                     <el-container>
-                        <el-header style="height: 50px">总数量{{ m }}</el-header>
+                        <el-header style="height: 50px; font-size: 30px; line-height: 50px">总数量{{ m }}</el-header>
                         <el-main style="height: 150px">
                             <el-row>
-                                    <el-col :span="12" v-for="(o, index) in Jn" :key="o" >
+                                    <el-col :span="12" v-for="(o, index) in JTypenumber" :key="o" >
                                         <el-card :body-style="{ padding: '0px' }">
                                         <img src='/public/images/手镯.jpg' alt='发生错误' class="image">
                                         <div style="padding: 14px;">
-                                            <span>戒指{{ index }}<el-button type="text" class="button">数量{{ index }}</el-button></span>
+                                            <span>戒指{{ o }}<el-button type="text" class="button" 
+                                                v-on:click="open5(m, o)">数量{{ o }}</el-button></span>
                                         </div>
                                         </el-card>
                                     </el-col>
@@ -63,15 +67,21 @@
                 </el-container>
             </el-aside>
             <el-main style="background-color: #D3DCE6">
-                <el-header style="height: 60px">盘点结果变化记录</el-header>
+                <el-header style="height: 60px; font-size: 35px; line-height: 60px">盘点结果变化记录</el-header>
                     <el-container v-for="logunit in logs" style="margin-top: 5px">
-                        <el-aside style="width: 150px; height: 80px; text-align: center; 
+                        <el-aside style="width: 150px; text-align: center; font-size: 30px; line-height: 100px;
                         background-color: rgb(0, 195, 255)">变动时间{{ logunit }}</el-aside>
-                        <el-main>变动内容{{ logunit }}</el-main>
+                        <el-main>
+                            <p v-for="m in counternumber">柜台{{ m }}中拿出<el-button type="text" 
+                                class="button" @click="takeout(m, logunit)">'{{ m }}-{{ logunit }}'</el-button>
+                                个珠宝，放入<el-button type="text" class="button" @click="putin(m, logunit)">
+                                '{{ m }}-{{ logunit }}'</el-button>个珠宝</p>
+                        </el-main>
                     </el-container>
             </el-main>
         </el-container>
-        <el-footer style="background-color: rgb(230, 166, 121)"><a type="text" href="http://www.designchn.com/">成都德杉科技有限公司</a></el-footer>
+        <el-footer style="background-color: rgb(230, 166, 121); font-size: 30px; line-height: 60px"><a type="text" 
+            href="http://www.designchn.com/">成都德杉科技有限公司</a></el-footer>
     </el-container>
 
 </div>
@@ -86,15 +96,35 @@
     var app = new Vue({
     el: '#app',
     data: {
-        message: [1, 2, 3, 4] ,
+        counternumber: ['A', 'B'] ,
         logs: [1, 2, 3, 4, 5, 6, 7] ,
-        Jn: [1, 2, 3, 4, 5, 6]
+        JTypenumber: [1, 2, 3, 4, 5, 6] ,
+        loading: false
     } ,
     methods: {
-      async open5() {
-        this.$alert('<strong>这是 <i>HTML</i> 片段</strong>', 'HTML 片段', {
-          dangerouslyUseHTMLString: true
-        });
+      async open5(m, o) {
+        this.$alert('柜台' + m + "中戒指" + o + "的标签明细");
+      } ,
+
+      async inventory() {
+          this.loading = true;
+          setTimeout( () => {this.loading = false;}, 5000 )
+      } ,
+
+      async takeout(m, logunit) {
+          let takeoutJew = "拿出：";
+          for(let JT of this.JTypenumber) {
+              takeoutJew += "柜台" + m + "珠宝类型" + JT + "日志" + logunit + "; ";
+          }
+          this.$alert(takeoutJew);
+      } ,
+
+      async putin(m, logunit) {
+          let putinJew = "放入：";
+          for(let JT of this.JTypenumber) {
+              putinJew += "柜台" + m + "珠宝类型" + JT + "日志" + logunit + "; ";
+          }
+          this.$alert(putinJew);
       }
     }
     })
