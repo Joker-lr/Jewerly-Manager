@@ -35,10 +35,12 @@
 
 <body>
 <div id="app">
-    <el-container>
-        <el-header style="height: 100px; background-color: rgb(97, 190, 170); font-size: 50px">珠宝盘点展示</el-header>
+    <el-container style="height: 900px">
+        <el-header style="height: 100px; background-color: rgb(97, 190, 170); font-size: 50px">珠宝盘点展示
+            <el-button type="primary" round v-on:click="open5" style="font-size: 30px">盘点</el-button>
+        </el-header>
         <el-container>
-            <el-aside style="width:700px; height: 600px">
+            <el-aside style="width:800px">
                 <el-container direction="vertical">
                 <el-container v-for="m in message" style="margin-top: 5px">
                     <el-aside width="200px" style="height: 300px; background-color: rgb(0, 195, 255)">柜台{{ m }}</el-aside>
@@ -48,7 +50,7 @@
                             <el-row>
                                     <el-col :span="12" v-for="(o, index) in Jn" :key="o" >
                                         <el-card :body-style="{ padding: '0px' }">
-                                        <img src="/public/images/戒指.jpg" class="image">
+                                        <img src='/public/images/手镯.jpg' alt='发生错误' class="image">
                                         <div style="padding: 14px;">
                                             <span>戒指{{ index }}<el-button type="text" class="button">数量{{ index }}</el-button></span>
                                         </div>
@@ -60,7 +62,7 @@
                 </el-container>
                 </el-container>
             </el-aside>
-            <el-main style="height: 600px; background-color: #D3DCE6">
+            <el-main style="background-color: #D3DCE6">
                 <el-header style="height: 60px">盘点结果变化记录</el-header>
                     <el-container v-for="logunit in logs" style="margin-top: 5px">
                         <el-aside style="width: 150px; height: 80px; text-align: center; 
@@ -87,6 +89,13 @@
         message: [1, 2, 3, 4] ,
         logs: [1, 2, 3, 4, 5, 6, 7] ,
         Jn: [1, 2, 3, 4, 5, 6]
+    } ,
+    methods: {
+      async open5() {
+        this.$alert('<strong>这是 <i>HTML</i> 片段</strong>', 'HTML 片段', {
+          dangerouslyUseHTMLString: true
+        });
+      }
     }
     })
   </script>
