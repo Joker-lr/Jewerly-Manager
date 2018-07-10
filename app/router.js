@@ -28,21 +28,17 @@ module.exports = app => {
         })
     }
     
-    console.log('Index start')
     // 首页
-    router.all('/', async (ctx, next) => {
-        console.log('router running')
-        try {
-            console.log('router running')
-        await send(ctx, '../public/index.html')
-        } catch (err) {
-        if (err.status !== 404) {
-            throw err
-        }
-        }
-    })
+    // router.all('/', async (ctx, next) => {
+    //     try {
+    //     await send(ctx, '../public/index.html')
+    //     } catch (err) {
+    //     if (err.status !== 404) {
+    //         throw err
+    //     }
+    //     }
+    // })
 
-    console.log('Index end')
     // 应用路由
     app.use(router.routes())
     .use(router.allowedMethods())

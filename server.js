@@ -25,6 +25,9 @@ app.context.view = {};
 str = fs.readFileSync(__dirname+"/views/JewerlyExibition.ejs","utf8");  //先读文件
 app.context.view['JewerlyExibition'] = str;
 
+//数据传递测试
+app.context.test = "原始数据";
+
 // 错误处理
 app.on('error', err => {
     console.log('Server error: ')
