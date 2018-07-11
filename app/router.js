@@ -28,16 +28,16 @@ module.exports = app => {
         })
     }
     
-    // 首页
-    // router.all('/', async (ctx, next) => {
-    //     try {
-    //     await send(ctx, '../public/index.html')
-    //     } catch (err) {
-    //     if (err.status !== 404) {
-    //         throw err
-    //     }
-    //     }
-    // })
+    //首页
+    router.all('/', async (ctx, next) => {
+        try {
+        await send(ctx, '../public/index.html')
+        } catch (err) {
+        if (err.status !== 404) {
+            throw err
+        }
+        }
+    })
 
     // 应用路由
     app.use(router.routes())

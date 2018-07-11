@@ -4,8 +4,11 @@ const setRouter = require('./app/router.js');
 const mysql = require('mysql2/promise');
 const path = require('path');
 const fs = require('fs');
+const bodyParser = require('koa-bodyparser');
 
 const app = new Koa();
+
+app.use(bodyParser());
 
 // 连接数据库
 const db = mysql.createPool({
@@ -20,13 +23,11 @@ const db = mysql.createPool({
 // 设置路由
 setRouter(app);
 
-// 加载EJS模板
-app.context.view = {};
-str = fs.readFileSync(__dirname+"/views/JewerlyExibition.ejs","utf8");  //先读文件
-app.context.view['JewerlyExibition'] = str;
+// // 加载EJS模板
+// app.context.view = {};
+// str = fs.readFileSync(__dirname+"/views/JewerlyExibition.ejs","utf8");  //先读文件
+// app.context.view['JewerlyExibition'] = str;
 
-//数据传递测试
-app.context.test = "原始数据";
 
 // 错误处理
 app.on('error', err => {
