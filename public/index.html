@@ -8,9 +8,9 @@
 </head>
 
 <body>
-    <div id="app" style="font-size: 20px; line-height: 600px; text-align: center">
-        <input v-model="inputZH" placeholder="请输入账号"></input>
-        <input v-model="inputMM" placeholder="请输入密码" type="password"></input>
+    <div id="app" style="font-size: 15px; margin:300px auto; text-align: center">
+        账号：<el-input v-model="inputZH" placeholder="请输入账号" style="width: 250px"></el-input><br/>
+        密码：<el-input v-model="inputMM" placeholder="请输入密码" type="password" style="width: 250px"></el-input><br/><br/>
         <a href="/exibition.html" v-if=" (inputMM === inputZH) && (inputMM != '')"><el-button>登陆</el-button></a>
     </div>
 </body>

@@ -18,15 +18,10 @@ const db = mysql.createPool({
     "password": "1234",
     "database": "jtest"
   })
-  app.context.db = db;
+app.context.db = db;
 
 // 设置路由
 setRouter(app);
-
-// // 加载EJS模板
-// app.context.view = {};
-// str = fs.readFileSync(__dirname+"/views/JewerlyExibition.ejs","utf8");  //先读文件
-// app.context.view['JewerlyExibition'] = str;
 
 
 // 错误处理

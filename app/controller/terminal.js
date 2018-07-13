@@ -2,11 +2,13 @@
 
 
 module.exports = {
+
+  ///////盘点参数设置///////////
   queryset: async (ctx) => {
     console.log("queryset.");
     // const [data] = await ctx.db.query(`SELECT * FROM SettingLog`);
     let sdata = ctx.request.body;
-    var myDate = new Date();
+    let myDate = new Date();
     let  addSql = `INSERT INTO SettingLog(ID, power, session, periodSingle, queryon, queryperiod, time) VALUES(null,?,?,?,?,?,?)`;
     let  addSqlParams = [ sdata.value1, (sdata.options.map( function(item){return item.value} )).indexOf(sdata.value),
     sdata.value2, sdata.value3?1:0, sdata.value4, myDate.toLocaleString( )];
@@ -14,14 +16,34 @@ module.exports = {
 
     ctx.response.body = 'ok';
    
-  },
-  paraset: async (ctx) => {
-    console.log("paraset.");
-    const [users] = await ctx.db.query(`SELECT * FROM JewerlyData`);
-    let InsertLoc = users.length;
-    let  addSql = `INSERT INTO J_EPC(ID,EPC_Number,Type,Location) VALUES(${InsertLoc},?,?,?)`;
-    let  addSqlParams = [ctx.request.query.EPC, ctx.request.query['类型'], ctx.request.query['位置'] ];
+  } ,
+
+  /////////终端数据整理给定位算法模块//////////
+  datatirm: async function(ctx) {
+    console.log('datatrim.')
+    let tt = require('fs').readFileSync('./public/testdata/testdata.txt','utf8'); /////模拟数据
+    let rawdata = JSON.parse(tt);
+    let testdata = rawdata.data.tags;
+    let inputdata = {};
+    for (let item of testdata) {
+      let a ={};
+      a[item.antenna] = item.count;
+      if (inputdata[`${item.tagId}`]) {
+          inputdata[`${item.tagId}`].push(a);
+      } else {
+          inputdata[`${item.tagId}`] = [a];
+      }
+    }
+
+  } ,
+
+  //////////接收终端数据并存储/////////////
+  termdatareceive: async function(ctx) {
+    console.log("termdatareceive.");
+    let tt = require('fs').readFileSync('./public/testdata/testdata.txt','utf8'); /////模拟数据
+    let myDate = new Date();
+    let  addSql = `INSERT INTO TerminalData(ID, Termdata, time) VALUES(null,?,?)`;
+    let  addSqlParams = [ tt, myDate.toLocaleString( )];
     await ctx.db.query(addSql, addSqlParams);
-    return ctx.body = '珠宝 { EPC：' + ctx.request.query.EPC + ' 类型： '+ ctx.request.query['类型'] +' 位置： ' + ctx.request.query['位置'] + '}----加入数据库';
   }
 }

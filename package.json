@@ -12,9 +12,11 @@
     "koa-router": "^7.3.0",
     "koa-session2": "^2.2.6",
     "koa-static": "^4.0.2",
+    "koa-websocket": "^5.0.1",
     "mysql2": "^1.5.3",
     "node-fetch": "^1.7.3",
     "vue": "^2.5.16",
+    "websocket": "^1.0.26",
     "ws": "^5.2.1"
   },
   "scripts": {

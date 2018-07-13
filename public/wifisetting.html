@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WiFi设置</title>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+
+<body>
+    <div id="app" style="font-size: 15px; margin:300px auto; text-align: center">
+        账号：<el-input v-model="wifiname" placeholder="请输入账号" style="width: 250px"></el-input><br/>
+        密码：<el-input v-model="password" placeholder="请输入密码" type="password" style="width: 250px"></el-input><br/><br/>
+        安全类型： <el-select v-model="security" placeholder="请选择">
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select><br/><br/>
+        <el-button @click="submitsettings">设置</el-button>
+    </div>
+</body>
+
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var app = new Vue({
+        el: '#app' ,
+        data: {
+            wifiname: "" ,
+            password: "" ,
+            security: null ,
+            options: [{
+                value: 1,
+                label: '无密码'
+                }, {
+                value: 2,
+                label: 'wep'
+                }, {
+                value: 3,
+                label: 'wpa'
+                }] ,
+            ID: "unknown"
+        } ,
+        methods: {
+            submitsettings: function() {
+                if(this.security && this.wifiname && this.password) {
+                    let req = {"id": this.ID, "wifi": this.wifiname, "password": this.password, "security": this.security};
+                    alert(JSON.stringify(req));
+                } else {
+                    alert("请输入账号密码，并且选择安全类型!")
+                }
+            }
+        }
+    })
+</script>
+
+</html>
