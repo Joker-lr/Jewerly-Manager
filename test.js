@@ -25,6 +25,7 @@ const db = require('mysql2/promise').createPool({
 const Loctag = async function(inputdata) {
      let [refertag] = await db.query('SELECT * FROM ReferenceTag');
      console.log(CalLoc(inputdata, refertag));
+    //  CalLoc(inputdata, refertag)
 }
 Taglocation = Loctag(inputdata);
 
@@ -32,12 +33,13 @@ const CalLoc = function (inputdata, refertag) {
     let results = {};
     for (let item_a of Object.keys(inputdata)) {
         let temp = {};
+        let weight = 0;
         for (let item_b of refertag) {
-            let weight = Calweight(inputdata[item_a], inputdata[item_b.EPC]);
-            if (temp[item_b.Location]) {
-                temp[item_b.location] += weight;
+            weight = Calweight(inputdata[item_a], inputdata[item_b.EPC]);
+            if (temp[`${item_b.Location}`]) {
+                temp[`${item_b.Location}`] += weight;
             } else {
-                temp[item_b.Location] = weight;
+                temp[`${item_b.Location}`] = weight;
             }
         }
         results[item_a] = temp;
@@ -45,6 +47,17 @@ const CalLoc = function (inputdata, refertag) {
     return results;
 }
 
-const Calweight = function (Array1, Array2) {
-    return 1;
+const Calweight = function (tag, refer) {
+    let weight = 0;
+    let power = 0;
+    for (let item of refer) {
+        power = power + Object.values(item) * Object.values(item);
+        for (let item_tag of tag) {
+            if ( Object.keys(item)[0] === Object.keys(item_tag)[0] ) {
+                weight += Object.values(item_tag) * Object.values(item);
+            }
+        }
+    }
+    weight = weight / power;
+    return weight;
 }
