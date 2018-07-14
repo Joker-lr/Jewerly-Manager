@@ -34,24 +34,25 @@
         <el-header style="height: 100px; background-color: rgb(97, 190, 170); 
         font-size: 50px; line-height: 100px">珠宝盘点展示
             <el-button type="primary" round style="font-size: 30px" @click="inventory()">盘点</el-button>
+            <el-button type="primary" round style="font-size: 30px" @click="refresh()">刷新</el-button>
             <a href="/qset.html"><el-button type="primary" round style="font-size: 30px">设置</el-button></a>
         </el-header>
         <el-container>
             <el-aside style="width:800px">
                 <el-container direction="vertical">
-                <el-container v-for="m in counternumber" style="margin-top: 5px">
-                    <el-aside width="200px" style="height: 300px; font-size: 60px; line-height: 300px;
-                     background-color: rgb(0, 195, 255)">柜台{{ m }}</el-aside>
+                <el-container v-for="m in counter" style="margin-top: 5px">
+                    <el-aside width="200px" style="height: 400px; font-size: 60px; line-height: 400px;
+                     background-color: rgb(0, 195, 255)">{{ m }}</el-aside>
                     <el-container>
-                        <el-header style="height: 50px; font-size: 30px; line-height: 50px">总数量{{ m }}</el-header>
+                        <el-header style="height: 50px; font-size: 30px; line-height: 50px">总数量{{ totalnumbers[m] }}</el-header>
                         <el-main style="height: 150px">
                             <el-row>
-                                    <el-col :span="12" v-for="(o, index) in JTypenumber" :key="o" >
+                                    <el-col :span="12" v-for="(o, index) in Object.keys(exidata[m])" :key="o" >
                                         <el-card :body-style="{ padding: '0px' }">
                                         <img src='/images/手镯.jpg' alt='发生错误' class="image" width="90px" height="90px">
                                         <div style="padding: 14px;">
-                                            <span>戒指{{ o }}<el-button type="text" class="button" 
-                                                v-on:click="open5(m, o)">数量{{ o }}</el-button></span>
+                                            <span>{{ o }}<el-button type="text" class="button" 
+                                                v-on:click="epcdetail(m, o)">数量{{ exidata[m][o].length }}</el-button></span>
                                         </div>
                                         </el-card>
                                     </el-col>
@@ -67,7 +68,7 @@
                         <el-aside style="width: 150px; text-align: center; font-size: 30px; line-height: 100px;
                         background-color: rgb(0, 195, 255)">变动时间{{ logunit }}</el-aside>
                         <el-main>
-                            <p v-for="m in counternumber">柜台{{ m }}中拿出<el-button type="text" 
+                            <p v-for="m in counter">柜台{{ m }}中拿出<el-button type="text" 
                                 class="button" @click="takeout(m, logunit)">'{{ m }}-{{ logunit }}'</el-button>
                                 个珠宝，放入<el-button type="text" class="button" @click="putin(m, logunit)">
                                 '{{ m }}-{{ logunit }}'</el-button>个珠宝</p>
@@ -83,22 +84,32 @@
 
 </body>
   <!-- import Vue before Element -->
-  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
   <!-- import JavaScript -->
-  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <!-- import vue-resource -->
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
 
   <script>
     var app = new Vue({
     el: '#app',
     data: {
-        counternumber: ['A', 'B', 'C', 'D'] ,
+        counter: null ,
         logs: [1, 2, 3, 4, 5, 6, 7] ,
         JTypenumber: [1, 2, 3, 4, 5, 6] ,
-        loading: false
+        loading: false ,
+        jewerlydata: null ,
+        movedata: null ,
+        exidata: null ,
+        totalnumbers: {},
+        moverecords: null
     } ,
     methods: {
-      async open5(m, o) {
-        this.$alert('柜台' + m + "中戒指" + o + "的标签明细");
+      async epcdetail(m, o) {
+        this.$alert(this.exidata[m][o])
+            .catch(function(error) {
+                    console.log(error)
+                });
       } ,
 
       inventory : async function() {
@@ -121,6 +132,92 @@
               putinJew += "柜台" + m + "珠宝类型" + JT + "日志" + logunit + "; ";
           }
           this.$alert(putinJew);
+      } ,
+
+      refresh: async function() {
+          this.$http.get('/terminal/exirefresh')
+                .then((response) => {
+                    this.movedata = response.body["movedata"];
+                    this.jewerlydata = response.body["jewerlydata"];
+
+                    //////////柜台展示数据整理及数量统计//////////
+                    let exidata = {};
+                    for ( let item of this.jewerlydata) {
+                        if (item.Location) {
+                           if (exidata[item.Location]) {
+                            if (exidata[item.Location][item.Type]) {
+                                exidata[item.Location][item.Type].push(item.EPC_Number);
+                            } else {
+                                exidata[item.Location][item.Type] = [ item.EPC_Number ];
+                            }
+                           } else {
+                               exidata[item.Location] = {} ;
+                               exidata[item.Location][item.Type] = [ item.EPC_Number ] ;
+                           }
+                        }
+                    }
+                    let temp = 0;
+                    for ( let item of Object.keys(exidata) ) {
+                        temp = 0;
+                        for ( let item_a of Object.keys( exidata[item] ) ) {
+                            temp += exidata[item][item_a].length;
+                        }
+                        this.totalnumbers[item] = temp;
+                    }
+                    // console.log( exidata );
+                    this.exidata = exidata;
+
+                    //////////珠宝显示数据更新/////////
+                    this.counter = Object.keys(exidata) ;
+
+                    /////////变动记录数据整理//////////
+                    let moverecords = [];
+                    let moverecord = {};
+                    let itemMoveData = null;
+                    for (let item of this.movedata) {
+                        moverecord = {} ;
+                        itemMoveData = JSON.parse(item.MoveData);
+                        for (let item_a of Object.keys( itemMoveData ) ) {
+                            // console.log( itemMoveData[item_a] )
+                            if ( itemMoveData[item_a].movebefore ) {
+                                let tempafter = itemMoveData[item_a].moveafter || "离开柜台" ;
+                                if (moverecord[ itemMoveData[item_a].movebefore ]) {
+                                    if ( moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] ) {
+                                        moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ].push( item_a );
+                                    } else {
+                                        moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
+                                    }
+                                } else {
+                                    moverecord[ itemMoveData[item_a].movebefore ] = { "放入" : {}, "拿出" : {} };
+                                    moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
+                                }
+                            }
+
+                            if ( itemMoveData[item_a].moveafter ) {
+                                let tempbefore = itemMoveData[item_a].movebefore || "从柜台外" ;
+                                if (moverecord[ itemMoveData[item_a].moveafter ]) {
+                                    if ( moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] ) {
+                                        moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ].push( item_a );
+                                    } else {
+                                        moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
+                                    }
+                                } else {
+                                    moverecord[ itemMoveData[item_a].moveafter ] = { "放入" : {}, "拿出" : {} };
+                                    moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
+                                }
+                            }
+
+                        }
+                        moverecords.push(moverecord);
+                    }
+                    this.moverecords = moverecords ;
+                    console.log( moverecords )
+                    console.log(this.movedata)
+
+                })
+                .catch(function(error) {
+                    console.log(error)
+                })
       }
     }
     })
