@@ -63,15 +63,15 @@
                 </el-container>
             </el-aside>
             <el-main style="background-color: #D3DCE6">
-                <el-header style="height: 60px; font-size: 35px; line-height: 60px">盘点结果变化记录</el-header>
-                    <el-container v-for="logunit in logs" style="margin-top: 5px">
+                <el-header style="height: 60px; font-size: 35px; line-height: 30px">盘点结果变化记录</el-header>
+                    <el-container v-for="(logunit, index) in moverecords" style="margin-top: 5px">
                         <el-aside style="width: 150px; text-align: center; font-size: 30px; line-height: 100px;
-                        background-color: rgb(0, 195, 255)">变动时间{{ logunit }}</el-aside>
+                        background-color: rgb(0, 195, 255)">{{ movedata[index].time }}</el-aside>
                         <el-main>
-                            <p v-for="m in counter">柜台{{ m }}中拿出<el-button type="text" 
-                                class="button" @click="takeout(m, logunit)">'{{ m }}-{{ logunit }}'</el-button>
+                            <p v-for="m in Object.keys(logunit)">{{ m }}中拿出<el-button type="text" 
+                                class="button" @click="takeout(m, logunit)">{{ logunit[m]["拿出总数"] }}</el-button>
                                 个珠宝，放入<el-button type="text" class="button" @click="putin(m, logunit)">
-                                '{{ m }}-{{ logunit }}'</el-button>个珠宝</p>
+                                    {{ logunit[m]["放入总数"] }}</el-button>个珠宝</p>
                         </el-main>
                     </el-container>
             </el-main>
@@ -119,19 +119,13 @@
       } ,
 
       async takeout(m, logunit) {
-          let takeoutJew = "拿出：";
-          for(let JT of this.JTypenumber) {
-              takeoutJew += "柜台" + m + "珠宝类型" + JT + "日志" + logunit + "; ";
-          }
-          this.$alert(takeoutJew);
+          let temp = logunit[m]["拿出"] ;
+          this.$alert( "到:" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
       } ,
 
       async putin(m, logunit) {
-          let putinJew = "放入：";
-          for(let JT of this.JTypenumber) {
-              putinJew += "柜台" + m + "珠宝类型" + JT + "日志" + logunit + "; ";
-          }
-          this.$alert(putinJew);
+        let temp = logunit[m]["放入"] ;
+        this.$alert( "从：" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
       } ,
 
       refresh: async function() {
@@ -188,13 +182,14 @@
                                         moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
                                     }
                                 } else {
-                                    moverecord[ itemMoveData[item_a].movebefore ] = { "放入" : {}, "拿出" : {} };
+                                    moverecord[ itemMoveData[item_a].movebefore ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
                                     moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
                                 }
+                                moverecord[ itemMoveData[item_a].movebefore ]["拿出总数"]++ ;
                             }
 
                             if ( itemMoveData[item_a].moveafter ) {
-                                let tempbefore = itemMoveData[item_a].movebefore || "从柜台外" ;
+                                let tempbefore = itemMoveData[item_a].movebefore || "柜台外" ;
                                 if (moverecord[ itemMoveData[item_a].moveafter ]) {
                                     if ( moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] ) {
                                         moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ].push( item_a );
@@ -202,9 +197,10 @@
                                         moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
                                     }
                                 } else {
-                                    moverecord[ itemMoveData[item_a].moveafter ] = { "放入" : {}, "拿出" : {} };
+                                    moverecord[ itemMoveData[item_a].moveafter ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
                                     moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
                                 }
+                                moverecord[ itemMoveData[item_a].moveafter ]["放入总数"]++ ;
                             }
 
                         }
