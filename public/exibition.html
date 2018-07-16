@@ -49,7 +49,7 @@
                             <el-row>
                                     <el-col :span="12" v-for="(o, index) in Object.keys(exidata[m])" :key="o" >
                                         <el-card :body-style="{ padding: '0px' }">
-                                        <img src='/images/手镯.jpg' alt='发生错误' class="image" width="90px" height="90px">
+                                        <img v-bind:src='pictureurls[o]' alt='发生错误' class="image" width="90px" height="90px">
                                         <div style="padding: 14px;">
                                             <span>{{ o }}<el-button type="text" class="button" 
                                                 v-on:click="epcdetail(m, o)">数量{{ exidata[m][o].length }}</el-button></span>
@@ -65,8 +65,8 @@
             <el-main style="background-color: #D3DCE6">
                 <el-header style="height: 60px; font-size: 35px; line-height: 30px">盘点结果变化记录</el-header>
                     <el-container v-for="(logunit, index) in moverecords" style="margin-top: 5px">
-                        <el-aside style="width: 150px; text-align: center; font-size: 30px; line-height: 100px;
-                        background-color: rgb(0, 195, 255)">{{ movedata[index].time }}</el-aside>
+                        <el-aside style="width: 250px; text-align: center; font-size: 30px; margin:0px auto;
+                        background-color: rgb(0, 195, 255)">{{ convertUTCTimeToLocalTime(movedata[index].time) }}</el-aside>
                         <el-main>
                             <p v-for="m in Object.keys(logunit)">{{ m }}中拿出<el-button type="text" 
                                 class="button" @click="takeout(m, logunit)">{{ logunit[m]["拿出总数"] }}</el-button>
@@ -102,7 +102,8 @@
         movedata: null ,
         exidata: null ,
         totalnumbers: {},
-        moverecords: null
+        moverecords: null ,
+        pictureurls: { "手镯": '/images/手镯.jpg', "项链": '/images/项链.jpg', "耳环": '/images/耳环.jpg', "戒指": '/images/戒指.jpg' }
     } ,
     methods: {
       async epcdetail(m, o) {
@@ -207,13 +208,32 @@
                         moverecords.push(moverecord);
                     }
                     this.moverecords = moverecords ;
-                    console.log( moverecords )
-                    console.log(this.movedata)
-
+                    // console.log( moverecords )
+                    // console.log(this.movedata)
                 })
                 .catch(function(error) {
                     console.log(error)
                 })
+      } ,
+
+      convertUTCTimeToLocalTime: function (UTCDateString) {
+        if(!UTCDateString){
+          return '-';
+        }
+        function formatFunc(str) {    //格式化显示
+          return str > 9 ? str : '0' + str
+        }
+        var date2 = new Date(UTCDateString);     //这步是关键
+        var year = date2.getFullYear();
+        var mon = formatFunc(date2.getMonth() + 1);
+        var day = formatFunc(date2.getDate());
+        var hour = date2.getHours();
+        // var noon = hour >= 12 ? 'PM' : 'AM';
+        // hour = hour>=12?hour-12:hour;
+        hour = formatFunc(hour);
+        var min = formatFunc(date2.getMinutes());
+        var dateStr = year+'-'+mon+'-'+day+' '+hour+':'+min;
+        return dateStr;
       }
     }
     })
