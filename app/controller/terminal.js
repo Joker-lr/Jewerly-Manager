@@ -4,7 +4,7 @@
 module.exports = {
 
   ///////盘点参数设置///////////
-  queryset: async (ctx) => {
+  queryset: async function(ctx) {
     console.log("queryset.");
     // const [data] = await ctx.db.query(`SELECT * FROM SettingLog`);
     let sdata = ctx.request.body;
@@ -19,7 +19,7 @@ module.exports = {
   } ,
 
   ////////前端珠宝显示页面刷新/////////////
-  exirefresh: async (ctx) => {
+  exirefresh: async function(ctx) {
     console.log("exirefresh.");
     let [ movedata ] = await ctx.db.query( "select * from movelog order by ID desc limit 10" );  /////最新10条变动记录
     let [ jewerlydata ] = await ctx.db.query( "SELECT * FROM jewerlydata" );
@@ -85,5 +85,78 @@ module.exports = {
     let  addSql = `INSERT INTO TerminalData(ID, Termdata, time) VALUES(null,?,?)`;
     let  addSqlParams = [ tt, myDate.toLocaleString( )];
     await ctx.db.query(addSql, addSqlParams);
+  } ,
+
+  //////////终端注册并存储注册数据////////
+  terminalregister: async function(ctx) {
+    console.log("terminalregister");
+    let tt = {"mac":"1CCAE33B3C9B","baseTinkerId":"test-base-1.1.2","token":"170976fa8ad1de3981e"};
+    const [[regdata]] = await ctx.db.query(`SELECT * FROM terminalmanager where mac = "${tt.mac}"`);
+    if(regdata) {
+        try {
+          regdata.token = tt.token;
+          //////更新的baseTinkerId版本及时间
+          if (regdata.baseTinkerId) { 
+            let temp = JSON.parse(regdata.baseTinkerId); 
+            if(temp[temp.length - 1] != tt.baseTinkerId)  {
+              temp.push( { "baseTinkerId": tt.baseTinkerId , "time" : (new Date()).toLocaleString( )});
+              regdata.baseTinkerId = JSON.stringify( temp );
+            }
+          } else {
+            regdata.baseTinkerId = JSON.stringify( [ { "baseTinkerId": tt.baseTinkerId , "time" : (new Date()).toLocaleString( )} ] ) ;
+          }
+          //////更新注册ID时间
+          if (regdata.RegisterTime) {
+            let temp = JSON.parse(regdata.RegisterTime);
+            temp.push( (new Date()).toLocaleString() );
+            regdata.RegisterTime = JSON.stringify( temp );
+          } else {
+            regdata.RegisterTime = JSON.stringify( [ (new Date()).toLocaleString() ] );
+          }
+          ///////更新状态
+          if (regdata.status) {
+            let temp = JSON.parse(regdata.status) ;
+            temp.push( { "status": "上线" , "time" : (new Date()).toLocaleString( )} );
+            regdata.status = JSON.stringify( temp );
+          } else {
+            regdata.status = JSON.stringify( [ { "status": "上线" , "time" : (new Date()).toLocaleString( )} ] );
+          }
+          ///////存储注册信息
+          let  updateSql = `UPDATE terminalmanager SET baseTinkerId=?, token=?, RegisterTime=?, status=? WHERE mac=?`;
+          let  updateSqlParams = [ regdata.baseTinkerId, regdata.token, regdata.RegisterTime, regdata.status, tt.mac ];
+          await ctx.db.query(updateSql, updateSqlParams);
+          //////响应客户端
+          ctx.response.body = JSON.stringify( { "type" : "注册ID响应状态码", "data" : { "message" : "success" } } );
+      } catch(err) {
+        ctx.response.body = JSON.stringify( { "type" : "注册ID响应状态码", "data" : { "message" : "failure" } } );
+      }
+    } else {
+      ctx.response.body = JSON.stringify( { "type" : "注册ID响应状态码", "data" : { "message" : "failure" } } );    /////// 注册ID响应状态码待定
+    }
+  } ,
+
+  //////////盘点指令发送给终端///////////
+  queryemit: async function(ctx) {
+    var JPush = require("/Users/Administrator/Desktop/Jewerly-Manager/node_modules/jpush-async/lib/JPush/JPushAsync.js");
+    var client = JPush.buildClient('96fbd2efcc3455075640c43f', '37da2da476a8757a445a13e1');
+
+    let [ [ querysetdata ] ] = await ctx.db.query('SELECT * FROM settinglog order by time desc limit 1');
+    let [ [ terminalregisterdata ] ] = await ctx.db.query('SELECT * FROM terminalmanager WHERE mac = "1CCAE33B3C9B"');
+    let message = { "mac": terminalregisterdata.mac , "cmd": 2000 , "power": querysetdata.power , "readTime": querysetdata.periodSingle, "totalNumber": 1 }
+    console.log(JSON.stringify(message));
+
+    client.push().setPlatform('ios', 'android')
+    .setAudience(JPush.registration_id('170976fa8ad1de3981e'))
+    .setMessage(JSON.stringify(message))
+    .setOptions(null, 60)
+    .send()
+    .then(function(result) {
+        console.log(result)
+        console.log("ok")
+    }).catch(function(err) {
+        console.log(err)
+        ctx.response.body = err;
+    });
+
   }
 }
