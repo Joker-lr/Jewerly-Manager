@@ -4,12 +4,15 @@ const CalLoc = function (inputdata, refertag) {
         let temp = {};
         let weight = 0;
         for (let item_b of refertag) {
-            weight = Calweight(inputdata[item_a], inputdata[item_b.EPC]);
-            if (temp[`${item_b.Location}`]) {
-                temp[`${item_b.Location}`] += weight;
-            } else {
-                temp[`${item_b.Location}`] = weight;
+            if(inputdata[item_b.EPC]) {
+                weight = Calweight(inputdata[item_a], inputdata[item_b.EPC]);
+                if (temp[`${item_b.Location}`]) {
+                    temp[`${item_b.Location}`] += weight;
+                } else {
+                    temp[`${item_b.Location}`] = weight;
+                }
             }
+            
         }
         results[item_a] = Object.entries(temp).sort( (a, b) => {return a[1] < b[1] });
     }
@@ -19,6 +22,7 @@ const CalLoc = function (inputdata, refertag) {
 const Calweight = function (tag, refer) {
     let weight = 0;
     let power = 0;
+    console.log(refer)
     for (let item of refer) {
         power = power + Object.values(item) * Object.values(item);
         for (let item_tag of tag) {

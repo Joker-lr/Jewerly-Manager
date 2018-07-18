@@ -5,7 +5,7 @@ module.exports = {
 
   ///////盘点参数设置///////////
   queryset: async function(ctx) {
-    console.log("queryset.");
+    console.log("queryset-盘点参数设置");
     // const [data] = await ctx.db.query(`SELECT * FROM SettingLog`);
     let sdata = ctx.request.body;
     let myDate = new Date();
@@ -20,7 +20,7 @@ module.exports = {
 
   ////////前端珠宝显示页面刷新/////////////
   exirefresh: async function(ctx) {
-    console.log("exirefresh.");
+    console.log("exirefresh-前端展示界面刷新");
     let [ movedata ] = await ctx.db.query( "select * from movelog order by ID desc limit 10" );  /////最新10条变动记录
     let [ jewerlydata ] = await ctx.db.query( "SELECT * FROM jewerlydata" );
     ctx.response.body = {"movedata": movedata, "jewerlydata": jewerlydata };
@@ -29,14 +29,15 @@ module.exports = {
 
   /////////计算及相关数据存储//////////
   tagloc: async function(ctx) {
-    console.log('tagloc.')
-    let tt = require('fs').readFileSync('./public/testdata/testdata.txt','utf8'); /////模拟数据
-
-    let rawdata = JSON.parse(tt);
+    console.log('tagloc-位置计算')
+    // let tt = require('fs').readFileSync('./public/testdata/testdata.txt','utf8'); /////模拟数据
+    let [ [ tt ] ] = await ctx.db.query( `SELECT TermData FROM TerminalData WHERE Type = "数据推送" order by time desc limit 1 ` );
+    let rawdata = JSON.parse(tt.TermData);
     let testdata = rawdata.data.tags;
     let inputdata = {};
+    inputdata = {} ;
     for (let item of testdata) {
-      let a ={};
+      let a = {};
       a[item.antenna] = item.count;
       if (inputdata[`${item.tagId}`]) {
           inputdata[`${item.tagId}`].push(a);
@@ -72,25 +73,56 @@ module.exports = {
       await ctx.db.query(modSql, modSqlParams);
     }
     ///////记录位置变动信息
-    let  addSql1 = `INSERT INTO movelog(ID, MoveData, time) VALUES(null,?,?)`;
-    let  addSqlParams1 = [ JSON.stringify(movedata), (new Date()).toLocaleString( )];
-    await ctx.db.query(addSql1, addSqlParams1); 
+    if( JSON.stringify(movedata) != '{}') {
+      let  addSql1 = `INSERT INTO movelog(ID, MoveData, time) VALUES(null,?,?)`;
+      let  addSqlParams1 = [ JSON.stringify(movedata), (new Date()).toLocaleString( )];
+      await ctx.db.query(addSql1, addSqlParams1);
+    }
   } ,
 
   //////////接收终端数据并存储/////////////
   termdatareceive: async function(ctx) {
-    console.log("termdatareceive.");
-    let tt = require('fs').readFileSync('./public/testdata/testdata.txt','utf8'); /////模拟数据
-    let myDate = new Date();
-    let  addSql = `INSERT INTO TerminalData(ID, Termdata, time) VALUES(null,?,?)`;
-    let  addSqlParams = [ tt, myDate.toLocaleString( )];
-    await ctx.db.query(addSql, addSqlParams);
+    console.log("termdatareceive-接收到终端数据");
+    // let tt = JSON.parse( require('fs').readFileSync('./public/testdata/testdata.txt','utf8') ); /////模拟数据
+    // let tt = JSON.parse( ctx.request.body );         ////////解析JSON对象报错
+    let tt = ctx.request.body ;
+    // console.log(tt);
+    if ( tt.type === 2001 ) {
+      console.log("数据推送")
+      try {
+        let  addSql = `INSERT INTO TerminalData( Termdata, time, Type) VALUES(?,?,?)`;
+        let  addSqlParams = [ JSON.stringify(tt), (new Date()).toLocaleString( ), "数据推送"];
+        await ctx.db.query(addSql, addSqlParams);
+        ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "success" } } );
+      } catch (err) {
+        ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "failure" } } );
+      }
+      ctx.response.redirect('/terminal/tagloc')
+    } else if ( tt.type === 8000 ) {
+      console.log("心跳包")
+      console.log(tt);
+      try {
+        let  addSql = `INSERT INTO TerminalData( Termdata, time, Type) VALUES(?,?,?)`;
+        let  addSqlParams = [ JSON.stringify(tt), (new Date()).toLocaleString( ), "心跳包"];
+        await ctx.db.query(addSql, addSqlParams);
+        ctx.response.body = JSON.stringify( { "type" : 8000, "data" : { "message" : "success" } } );
+      } catch (err) {
+        ctx.response.body = JSON.stringify( { "type" : 8000, "data" : { "message" : "failure" } } );
+      }
+      
+    } else {
+      // ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "failure" } } );
+    }
+    
   } ,
 
   //////////终端注册并存储注册数据////////
   terminalregister: async function(ctx) {
-    console.log("terminalregister");
-    let tt = {"mac":"1CCAE33B3C9B","baseTinkerId":"test-base-1.1.2","token":"170976fa8ad1de3981e"};
+    console.log("terminalregister-终端注册");
+    // let tt = {"mac":"1CCAE33B3C9B","baseTinkerId":"test-base-1.1.2","token":"170976fa8ad1de3981e"};   ////////模拟数据
+    // let tt = JSON.parse( ctx.request.body );     ///////解析JSON对象报错
+    let tt = ctx.request.body ;
+    // console.log(tt);
     const [[regdata]] = await ctx.db.query(`SELECT * FROM terminalmanager where mac = "${tt.mac}"`);
     if(regdata) {
         try {
@@ -137,16 +169,17 @@ module.exports = {
 
   //////////盘点指令发送给终端///////////
   queryemit: async function(ctx) {
-    var JPush = require("/Users/Administrator/Desktop/Jewerly-Manager/node_modules/jpush-async/lib/JPush/JPushAsync.js");
+    console.log("queryemit-发送盘点命令")
+    var JPush = require("jpush-async/lib/JPush/JPushAsync.js");
     var client = JPush.buildClient('96fbd2efcc3455075640c43f', '37da2da476a8757a445a13e1');
 
     let [ [ querysetdata ] ] = await ctx.db.query('SELECT * FROM settinglog order by time desc limit 1');
-    let [ [ terminalregisterdata ] ] = await ctx.db.query('SELECT * FROM terminalmanager WHERE mac = "1CCAE33B3C9B"');
+    let [ [ terminalregisterdata ] ] = await ctx.db.query('SELECT * FROM terminalmanager WHERE mac = "1CCAE33B63BA"');   /////////固定使用唯一一台终端的mac
     let message = { "mac": terminalregisterdata.mac , "cmd": 2000 , "power": querysetdata.power , "readTime": querysetdata.periodSingle, "totalNumber": 1 }
-    console.log(JSON.stringify(message));
+    // console.log(JSON.stringify(message));
 
     client.push().setPlatform('ios', 'android')
-    .setAudience(JPush.registration_id('170976fa8ad1de3981e'))
+    .setAudience(JPush.registration_id(terminalregisterdata.token))
     .setMessage(JSON.stringify(message))
     .setOptions(null, 60)
     .send()
@@ -155,8 +188,9 @@ module.exports = {
         console.log("ok")
     }).catch(function(err) {
         console.log(err)
-        ctx.response.body = err;
+        // ctx.response.body = err;
     });
 
-  }
+    ctx.response.body = "to queryemit ok"
+  } 
 }
