@@ -38,7 +38,7 @@
             <a href="/qset.html"><el-button type="primary" round style="font-size: 30px">设置</el-button></a>
         </el-header>
         <el-container>
-            <el-aside style="width:800px">
+            <el-aside style="width:900px">
                 <el-container direction="vertical">
                 <el-container v-for="m in counter" style="margin-top: 5px">
                     <el-aside width="200px" style="height: 400px; font-size: 60px; line-height: 400px;
@@ -49,10 +49,10 @@
                             <el-row>
                                     <el-col :span="12" v-for="(o, index) in Object.keys(exidata[m])" :key="o" >
                                         <el-card :body-style="{ padding: '0px' }">
-                                        <img v-bind:src='pictureurls[o]' alt='发生错误' class="image" width="90px" height="90px">
+                                        <img v-bind:src='pictureurls[o]' alt='发生错误' class="image" width="120px" height="120px">
                                         <div style="padding: 14px;">
-                                            <span>{{ o }}<el-button type="text" class="button" 
-                                                v-on:click="epcdetail(m, o)">数量{{ exidata[m][o].length }}</el-button></span>
+                                            <span style="font-size: 15px">{{ o }}-<el-button type="text" class="button" 
+                                                v-on:click="epcdetail(m, o)" style="font-size: 15px">数量{{ exidata[m][o].length }}</el-button></span>
                                         </div>
                                         </el-card>
                                     </el-col>
@@ -63,15 +63,15 @@
                 </el-container>
             </el-aside>
             <el-main style="background-color: #D3DCE6">
-                <el-header style="height: 60px; font-size: 35px; line-height: 30px">盘点结果变化记录</el-header>
+                <el-header style="height: 60px; font-size: 35px; line-height: 60px">盘点结果变化记录</el-header>
                     <el-container v-for="(logunit, index) in moverecords" style="margin-top: 5px">
                         <el-aside style="width: 250px; text-align: center; font-size: 30px; margin:0px auto;
                         background-color: rgb(0, 195, 255)">{{ convertUTCTimeToLocalTime(movedata[index].time) }}</el-aside>
                         <el-main>
-                            <p v-for="m in Object.keys(logunit)">{{ m }}中拿出<el-button type="text" 
-                                class="button" @click="takeout(m, logunit)">{{ logunit[m]["拿出总数"] }}</el-button>
-                                个珠宝，放入<el-button type="text" class="button" @click="putin(m, logunit)">
-                                    {{ logunit[m]["放入总数"] }}</el-button>个珠宝</p>
+                            <li v-for="m in Object.keys(logunit)" style="font-size: 20px">{{ m }}中拿出<el-button type="text" 
+                                class="button" @click="takeout(m, logunit)" style="font-size: 20px">{{ logunit[m]["拿出总数"] }}</el-button>
+                                个珠宝，放入<el-button type="text" class="button" @click="putin(m, logunit)" style="font-size: 20px">
+                                    {{ logunit[m]["放入总数"] }}</el-button>个珠宝</li>
                         </el-main>
                     </el-container>
             </el-main>
@@ -90,157 +90,190 @@
   <!-- import vue-resource -->
 <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
 
-  <script>
-    var app = new Vue({
-    el: '#app',
-    data: {
-        counter: null ,
-        logs: [1, 2, 3, 4, 5, 6, 7] ,
-        JTypenumber: [1, 2, 3, 4, 5, 6] ,
-        loading: false ,
-        jewerlydata: null ,
-        movedata: null ,
-        exidata: null ,
-        totalnumbers: {},
-        moverecords: null ,
-        pictureurls: { "手镯": '/images/手镯.jpg', "项链": '/images/项链.jpg', "耳环": '/images/耳环.jpg', "戒指": '/images/戒指.jpg' }
-    } ,
-    methods: {
-      async epcdetail(m, o) {
-        this.$alert(this.exidata[m][o])
-            .catch(function(error) {
-                    console.log(error)
-                });
-      } ,
-
-      inventory : async function() {
-        //   this.loading = true;
-        //   setTimeout( () => {this.loading = false;}, 5000 )
-        this.$http.get('/terminal/queryemit')
-            .then( (response) => {console.log(response)} )
-            .catch(function(error) {
-                        console.log(error)
-                    })
-          
-      } ,
-
-      async takeout(m, logunit) {
-          let temp = logunit[m]["拿出"] ;
-          this.$alert( "到:" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
-      } ,
-
-      async putin(m, logunit) {
-        let temp = logunit[m]["放入"] ;
-        this.$alert( "从：" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
-      } ,
-
-      refresh: async function() {
-          this.$http.get('/terminal/exirefresh')
-                .then((response) => {
-                    this.movedata = response.body["movedata"];
-                    this.jewerlydata = response.body["jewerlydata"];
-
-                    //////////柜台展示数据整理及数量统计//////////
-                    let exidata = {};
-                    for ( let item of this.jewerlydata) {
-                        if (item.Location) {
-                           if (exidata[item.Location]) {
-                            if (exidata[item.Location][item.Type]) {
-                                exidata[item.Location][item.Type].push(item.EPC_Number);
-                            } else {
-                                exidata[item.Location][item.Type] = [ item.EPC_Number ];
-                            }
-                           } else {
-                               exidata[item.Location] = {} ;
-                               exidata[item.Location][item.Type] = [ item.EPC_Number ] ;
-                           }
-                        }
-                    }
-                    let temp = 0;
-                    for ( let item of Object.keys(exidata) ) {
-                        temp = 0;
-                        for ( let item_a of Object.keys( exidata[item] ) ) {
-                            temp += exidata[item][item_a].length;
-                        }
-                        this.totalnumbers[item] = temp;
-                    }
-                    // console.log( exidata );
-                    this.exidata = exidata;
-
-                    //////////珠宝显示数据更新/////////
-                    this.counter = Object.keys(exidata) ;
-
-                    /////////变动记录数据整理//////////
-                    let moverecords = [];
-                    let moverecord = {};
-                    let itemMoveData = null;
-                    for (let item of this.movedata) {
-                        moverecord = {} ;
-                        itemMoveData = JSON.parse(item.MoveData);
-                        for (let item_a of Object.keys( itemMoveData ) ) {
-                            // console.log( itemMoveData[item_a] )
-                            if ( itemMoveData[item_a].movebefore ) {
-                                let tempafter = itemMoveData[item_a].moveafter || "离开柜台" ;
-                                if (moverecord[ itemMoveData[item_a].movebefore ]) {
-                                    if ( moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] ) {
-                                        moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ].push( item_a );
-                                    } else {
-                                        moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
-                                    }
-                                } else {
-                                    moverecord[ itemMoveData[item_a].movebefore ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
-                                    moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
-                                }
-                                moverecord[ itemMoveData[item_a].movebefore ]["拿出总数"]++ ;
-                            }
-
-                            if ( itemMoveData[item_a].moveafter ) {
-                                let tempbefore = itemMoveData[item_a].movebefore || "柜台外" ;
-                                if (moverecord[ itemMoveData[item_a].moveafter ]) {
-                                    if ( moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] ) {
-                                        moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ].push( item_a );
-                                    } else {
-                                        moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
-                                    }
-                                } else {
-                                    moverecord[ itemMoveData[item_a].moveafter ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
-                                    moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
-                                }
-                                moverecord[ itemMoveData[item_a].moveafter ]["放入总数"]++ ;
-                            }
-
-                        }
-                        moverecords.push(moverecord);
-                    }
-                    this.moverecords = moverecords ;
-                    // console.log( moverecords )
-                    // console.log(this.movedata)
-                })
+<script>
+    window.onload = function() {
+        var app = new Vue({
+        el: '#app',
+        data: {
+            counter: null ,
+            loading: false ,
+            jewerlydata: null ,
+            movedata: null ,
+            exidata: null ,
+            totalnumbers: {},
+            moverecords: null ,
+            pictureurls: { "手镯": '/images/手镯.jpg', "项链": '/images/项链.jpg', "耳环": '/images/耳环.jpg', "戒指": '/images/戒指.jpg' }
+        } ,
+        methods: {
+            async epcdetail(m, o) {
+            this.$alert(this.exidata[m][o])
                 .catch(function(error) {
-                    console.log(error)
-                })
-      } ,
+                        console.log(error)
+                    });
+            } ,
 
-      convertUTCTimeToLocalTime: function (UTCDateString) {
-        if(!UTCDateString){
-          return '-';
+            inventory : async function() {
+            //   this.loading = true;
+            //   setTimeout( () => {this.loading = false;}, 5000 )
+            let _this = this;
+            _this.$http.get('/terminal/queryemit')
+                        .then( (response) => {
+                            _this.loading = true;
+                            setTimeout( () => {_this.loading = false;}, response.body )
+                            // console.log(response)
+                            })
+                        .catch(function(error) {
+                                    console.log(error)
+                            })
+                
+            } ,
+
+            async takeout(m, logunit) {
+                let temp = logunit[m]["拿出"] ;
+                // this.$alert( "到:" + "\n" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
+                this.$msgbox( "到:" + "\n" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
+            } ,
+
+            async putin(m, logunit) {
+            let temp = logunit[m]["放入"] ;
+            // this.$alert( "从：" + "\n" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
+            this.$msgbox( "从：" + "\n" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
+            } ,
+
+            refresh: async function() {
+            //   this.$http.get('/terminal/exirefresh')
+            //         .then((response) => {
+            //             this.movedata = response.body["movedata"];
+            //             this.jewerlydata = response.body["jewerlydata"];
+            //             this.totalnumbers = response.body["totalnumbers"];
+            //             this.exidata = response.body["exidata"];
+            //             this.moverecords = response.body["moverecords"];
+            //             this.counter = Object.keys(this.exidata) ;
+
+            //             // //////////柜台展示数据整理及数量统计//////////
+            //             // let exidata = {};
+            //             // for ( let item of this.jewerlydata) {
+            //             //     if (item.Location) {
+            //             //        if (exidata[item.Location]) {
+            //             //         if (exidata[item.Location][item.Type]) {
+            //             //             exidata[item.Location][item.Type].push(item.EPC_Number);
+            //             //         } else {
+            //             //             exidata[item.Location][item.Type] = [ item.EPC_Number ];
+            //             //         }
+            //             //        } else {
+            //             //            exidata[item.Location] = {} ;
+            //             //            exidata[item.Location][item.Type] = [ item.EPC_Number ] ;
+            //             //        }
+            //             //     }
+            //             // }
+            //             // let temp = 0;
+            //             // for ( let item of Object.keys(exidata) ) {
+            //             //     temp = 0;
+            //             //     for ( let item_a of Object.keys( exidata[item] ) ) {
+            //             //         temp += exidata[item][item_a].length;
+            //             //     }
+            //             //     this.totalnumbers[item] = temp;
+            //             // }
+            //             // // console.log( exidata );
+            //             // this.exidata = exidata;
+
+            //             // //////////珠宝显示数据更新/////////
+            //             // this.counter = Object.keys(exidata) ;
+
+            //             // /////////变动记录数据整理//////////
+            //             // let moverecords = [];
+            //             // let moverecord = {};
+            //             // let itemMoveData = null;
+            //             // for (let item of this.movedata) {
+            //             //     moverecord = {} ;
+            //             //     itemMoveData = JSON.parse(item.MoveData);
+            //             //     for (let item_a of Object.keys( itemMoveData ) ) {
+            //             //         // console.log( itemMoveData[item_a] )
+            //             //         if ( itemMoveData[item_a].movebefore ) {
+            //             //             let tempafter = itemMoveData[item_a].moveafter || "离开柜台" ;
+            //             //             if (moverecord[ itemMoveData[item_a].movebefore ]) {
+            //             //                 if ( moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] ) {
+            //             //                     moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ].push( item_a );
+            //             //                 } else {
+            //             //                     moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
+            //             //                 }
+            //             //             } else {
+            //             //                 moverecord[ itemMoveData[item_a].movebefore ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
+            //             //                 moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
+            //             //             }
+            //             //             moverecord[ itemMoveData[item_a].movebefore ]["拿出总数"]++ ;
+            //             //         }
+
+            //             //         if ( itemMoveData[item_a].moveafter ) {
+            //             //             let tempbefore = itemMoveData[item_a].movebefore || "柜台外" ;
+            //             //             if (moverecord[ itemMoveData[item_a].moveafter ]) {
+            //             //                 if ( moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] ) {
+            //             //                     moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ].push( item_a );
+            //             //                 } else {
+            //             //                     moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
+            //             //                 }
+            //             //             } else {
+            //             //                 moverecord[ itemMoveData[item_a].moveafter ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
+            //             //                 moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
+            //             //             }
+            //             //             moverecord[ itemMoveData[item_a].moveafter ]["放入总数"]++ ;
+            //             //         }
+
+            //             //     }
+            //             //     moverecords.push(moverecord);
+            //             // }
+            //             // this.moverecords = moverecords ;
+            //         })
+            //         .catch(function(error) {
+            //             console.log(error)
+            //         })
+                    
+            let _this = this;
+            setInterval( () => {
+                _this.$http.get('/terminal/exirefresh')
+                    .then((response) => {
+                    _this.movedata = response.body["movedata"];
+                    _this.jewerlydata = response.body["jewerlydata"];
+                    _this.totalnumbers = response.body["totalnumbers"];
+                    _this.exidata = response.body["exidata"];
+                    _this.moverecords = response.body["moverecords"];
+                    _this.counter = Object.keys(this.exidata) ;
+                    })
+                    .catch(function(error) {
+                    console.log(error)
+                    })
+            } , 1000)
+                    
+            } ,
+
+            convertUTCTimeToLocalTime: function (UTCDateString) {
+            if(!UTCDateString){
+                return '-';
+            }
+            function formatFunc(str) {    //格式化显示
+                return str > 9 ? str : '0' + str
+            }
+            var date2 = new Date(UTCDateString);     //这步是关键
+            var year = date2.getFullYear();
+            var mon = formatFunc(date2.getMonth() + 1);
+            var day = formatFunc(date2.getDate());
+            var hour = date2.getHours();
+            // var noon = hour >= 12 ? 'PM' : 'AM';
+            // hour = hour>=12?hour-12:hour;
+            hour = formatFunc(hour);
+            var min = formatFunc(date2.getMinutes());
+            var dateStr = year+'-'+mon+'-'+day+' '+hour+':'+min;
+            return dateStr;
+            } 
+        } ,
+
+        mounted(){
+            this.refresh();
         }
-        function formatFunc(str) {    //格式化显示
-          return str > 9 ? str : '0' + str
-        }
-        var date2 = new Date(UTCDateString);     //这步是关键
-        var year = date2.getFullYear();
-        var mon = formatFunc(date2.getMonth() + 1);
-        var day = formatFunc(date2.getDate());
-        var hour = date2.getHours();
-        // var noon = hour >= 12 ? 'PM' : 'AM';
-        // hour = hour>=12?hour-12:hour;
-        hour = formatFunc(hour);
-        var min = formatFunc(date2.getMinutes());
-        var dateStr = year+'-'+mon+'-'+day+' '+hour+':'+min;
-        return dateStr;
-      }
+
+        })
     }
-    })
-  </script>
+
+</script>
+
 </html>

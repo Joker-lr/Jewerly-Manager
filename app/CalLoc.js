@@ -22,7 +22,7 @@ const CalLoc = function (inputdata, refertag) {
 const Calweight = function (tag, refer) {
     let weight = 0;
     let power = 0;
-    console.log(refer)
+    // console.log(refer)
     for (let item of refer) {
         power = power + Object.values(item) * Object.values(item);
         for (let item_tag of tag) {

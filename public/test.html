@@ -1,21 +1,15 @@
 <html>
 <head>
-    <title>ws demo</title>
-    <meta charset="utf8">
+<script type="text/javascript">
+function disp_alert()
+{
+alert("再打个招呼。这里演示了" + "\n" + "如何在消息框中添加折行。")
+}
+</script>
 </head>
 <body>
-    
+
+<input type="button" onclick="disp_alert()" value="显示消息框" />
+
 </body>
-
-<script>
-  var ws = new WebSocket('ws://localhost:8080');
-  ws.onopen = function () {
-    console.log('client: ws connection is open');
-    ws.send('hello');
-  };
-  ws.onmessage = function (e) {
-    console.log('client: received %s', e.data);
-  };
-</script>
-
 </html>

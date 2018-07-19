@@ -20,16 +20,89 @@ module.exports = {
 
   ////////前端珠宝显示页面刷新/////////////
   exirefresh: async function(ctx) {
-    console.log("exirefresh-前端展示界面刷新");
+    // console.log("exirefresh-前端展示界面刷新");
     let [ movedata ] = await ctx.db.query( "select * from movelog order by ID desc limit 10" );  /////最新10条变动记录
     let [ jewerlydata ] = await ctx.db.query( "SELECT * FROM jewerlydata" );
-    ctx.response.body = {"movedata": movedata, "jewerlydata": jewerlydata };
+
+    //////////柜台展示数据整理及数量统计//////////
+    let exidata = {};
+    let totalnumbers ={};
+    for ( let item of jewerlydata) {
+        if (item.Location) {
+          if (exidata[item.Location]) {
+            if (exidata[item.Location][item.Type]) {
+                exidata[item.Location][item.Type].push(item.EPC_Number);
+            } else {
+                exidata[item.Location][item.Type] = [ item.EPC_Number ];
+            }
+          } else {
+              exidata[item.Location] = {} ;
+              exidata[item.Location][item.Type] = [ item.EPC_Number ] ;
+          }
+        }
+    }
+    let temp = 0;
+    for ( let item of Object.keys(exidata) ) {
+        temp = 0;
+        for ( let item_a of Object.keys( exidata[item] ) ) {
+            temp += exidata[item][item_a].length;
+        }
+        totalnumbers[item] = temp;
+    }
+
+
+    /////////变动记录数据整理//////////
+    let moverecords = [];
+    let moverecord = {};
+    let itemMoveData = null;
+    for (let item of movedata) {
+        moverecord = {} ;
+        itemMoveData = JSON.parse(item.MoveData);
+        for (let item_a of Object.keys( itemMoveData ) ) {
+            // console.log( itemMoveData[item_a] )
+            if ( itemMoveData[item_a].movebefore ) {
+                let tempafter = itemMoveData[item_a].moveafter || "离开柜台" ;
+                if (moverecord[ itemMoveData[item_a].movebefore ]) {
+                    if ( moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] ) {
+                        moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ].push( item_a );
+                    } else {
+                        moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
+                    }
+                } else {
+                    moverecord[ itemMoveData[item_a].movebefore ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
+                    moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
+                }
+                moverecord[ itemMoveData[item_a].movebefore ]["拿出总数"]++ ;
+            }
+
+            if ( itemMoveData[item_a].moveafter ) {
+                let tempbefore = itemMoveData[item_a].movebefore || "柜台外" ;
+                if (moverecord[ itemMoveData[item_a].moveafter ]) {
+                    if ( moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] ) {
+                        moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ].push( item_a );
+                    } else {
+                        moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
+                    }
+                } else {
+                    moverecord[ itemMoveData[item_a].moveafter ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
+                    moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
+                }
+                moverecord[ itemMoveData[item_a].moveafter ]["放入总数"]++ ;
+            }
+
+        }
+        moverecords.push(moverecord);
+    }
+
+    ctx.response.body = {"movedata": movedata, "jewerlydata": jewerlydata, "totalnumbers" : totalnumbers, "exidata" : exidata, "moverecords" : moverecords };
     // console.log( ctx.response.body )
   } ,
 
   /////////计算及相关数据存储//////////
   tagloc: async function(ctx) {
     console.log('tagloc-位置计算')
+    ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "success" } } );
+    // console.log(ctx.response.body)
     // let tt = require('fs').readFileSync('./public/testdata/testdata.txt','utf8'); /////模拟数据
     let [ [ tt ] ] = await ctx.db.query( `SELECT TermData FROM TerminalData WHERE Type = "数据推送" order by time desc limit 1 ` );
     let rawdata = JSON.parse(tt.TermData);
@@ -47,7 +120,7 @@ module.exports = {
     }
     let [refertag] = await ctx.db.query('SELECT * FROM ReferenceTag');    //////准备定位算法需要的数据
 
-    let Locdata = await require('../CalLoc.js')(inputdata, refertag);          //////调用定位模块
+    let Locdata = await require('../CalLoc.js')(inputdata, refertag);          //////调S用定位模块
 
     let  addSql = `INSERT INTO LocationLog(ID, JewerlyLocation, time) VALUES(null,?,?)`;
     let  addSqlParams = [ JSON.stringify(Locdata), (new Date()).toLocaleString( )];
@@ -78,6 +151,7 @@ module.exports = {
       let  addSqlParams1 = [ JSON.stringify(movedata), (new Date()).toLocaleString( )];
       await ctx.db.query(addSql1, addSqlParams1);
     }
+
   } ,
 
   //////////接收终端数据并存储/////////////
@@ -93,11 +167,14 @@ module.exports = {
         let  addSql = `INSERT INTO TerminalData( Termdata, time, Type) VALUES(?,?,?)`;
         let  addSqlParams = [ JSON.stringify(tt), (new Date()).toLocaleString( ), "数据推送"];
         await ctx.db.query(addSql, addSqlParams);
-        ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "success" } } );
+        // ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "success" } } );      ///////////后面有redirect，返回无效
+        // console.log(ctx.response.body)
+        ctx.response.redirect('/terminal/tagloc')
       } catch (err) {
         ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "failure" } } );
+        // console.log(ctx.response.body)
       }
-      ctx.response.redirect('/terminal/tagloc')
+      // ctx.response.redirect('/terminal/tagloc')
     } else if ( tt.type === 8000 ) {
       console.log("心跳包")
       console.log(tt);
@@ -106,12 +183,15 @@ module.exports = {
         let  addSqlParams = [ JSON.stringify(tt), (new Date()).toLocaleString( ), "心跳包"];
         await ctx.db.query(addSql, addSqlParams);
         ctx.response.body = JSON.stringify( { "type" : 8000, "data" : { "message" : "success" } } );
+        // console.log(ctx.response.body)
       } catch (err) {
         ctx.response.body = JSON.stringify( { "type" : 8000, "data" : { "message" : "failure" } } );
+        // console.log(ctx.response.body)
       }
       
     } else {
-      // ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "failure" } } );
+      ctx.response.body = JSON.stringify( { "type" : 1000, "data" : { "message" : "failure" } } );
+      // console.log(ctx.response.body)
     }
     
   } ,
@@ -185,12 +265,11 @@ module.exports = {
     .send()
     .then(function(result) {
         console.log(result)
-        console.log("ok")
     }).catch(function(err) {
         console.log(err)
         // ctx.response.body = err;
     });
 
-    ctx.response.body = "to queryemit ok"
+    ctx.response.body = 8 * querysetdata.periodSingle * 1000 + 12000;   ////////前端页面盘点后封存时间
   } 
 }
