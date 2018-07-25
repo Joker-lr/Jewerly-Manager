@@ -6,10 +6,9 @@ module.exports = {
   ///////盘点参数设置///////////
   queryset: async function(ctx) {
     console.log("queryset-盘点参数设置");
-    // const [data] = await ctx.db.query(`SELECT * FROM SettingLog`);
     let sdata = ctx.request.body;
     let myDate = new Date();
-    let  addSql = `INSERT INTO SettingLog(ID, power, session, periodSingle, queryon, queryperiod, time) VALUES(null,?,?,?,?,?,?)`;
+    let  addSql = `INSERT INTO settinglog(id, power, session, period_single, query_on, query_period, time) VALUES(null,?,?,?,?,?,?)`;
     let  addSqlParams = [ sdata.value1, (sdata.options.map( function(item){return item.value} )).indexOf(sdata.value),
     sdata.value2, sdata.value3?1:0, sdata.value4, myDate.toLocaleString( )];
     await ctx.db.query(addSql, addSqlParams);
@@ -21,23 +20,23 @@ module.exports = {
   ////////前端珠宝显示页面刷新/////////////
   exirefresh: async function(ctx) {
     // console.log("exirefresh-前端展示界面刷新");
-    let [ movedata ] = await ctx.db.query( "select * from movelog order by ID desc limit 10" );  /////最新10条变动记录
+    let [ movedata ] = await ctx.db.query( "select * from movelog order by id desc limit 10" );  /////最新10条变动记录
     let [ jewerlydata ] = await ctx.db.query( "SELECT * FROM jewerlydata" );
 
     //////////柜台展示数据整理及数量统计//////////
     let exidata = {};
     let totalnumbers ={};
     for ( let item of jewerlydata) {
-        if (item.Location) {
-          if (exidata[item.Location]) {
-            if (exidata[item.Location][item.Type]) {
-                exidata[item.Location][item.Type].push(item.EPC_Number);
+        if (item.location) {
+          if (exidata[item.location]) {
+            if (exidata[item.location][item.type]) {
+                exidata[item.location][item.type].push(item.epc_number);
             } else {
-                exidata[item.Location][item.Type] = [ item.EPC_Number ];
+                exidata[item.location][item.type] = [ item.epc_number ];
             }
           } else {
-              exidata[item.Location] = {} ;
-              exidata[item.Location][item.Type] = [ item.EPC_Number ] ;
+              exidata[item.location] = {} ;
+              exidata[item.location][item.type] = [ item.epc_number ] ;
           }
         }
     }
@@ -57,7 +56,7 @@ module.exports = {
     let itemMoveData = null;
     for (let item of movedata) {
         moverecord = {} ;
-        itemMoveData = JSON.parse(item.MoveData);
+        itemMoveData = JSON.parse(item.move_data);
         for (let item_a of Object.keys( itemMoveData ) ) {
             // console.log( itemMoveData[item_a] )
             if ( itemMoveData[item_a].movebefore ) {
@@ -104,8 +103,8 @@ module.exports = {
     ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "success" } } );
     // console.log(ctx.response.body)
     // let tt = require('fs').readFileSync('./public/testdata/testdata.txt','utf8'); /////模拟数据
-    let [ [ tt ] ] = await ctx.db.query( `SELECT TermData FROM TerminalData WHERE Type = "数据推送" order by time desc limit 1 ` );
-    let rawdata = JSON.parse(tt.TermData);
+    let [ [ tt ] ] = await ctx.db.query( `SELECT term_data FROM terminaldata WHERE type = "数据推送" order by time desc limit 1 ` );
+    let rawdata = JSON.parse(tt.term_data);
     let testdata = rawdata.data.tags;
     let inputdata = {};
     inputdata = {} ;
@@ -118,36 +117,36 @@ module.exports = {
           inputdata[`${item.tagId}`] = [a];
       }
     }
-    let [refertag] = await ctx.db.query('SELECT * FROM ReferenceTag');    //////准备定位算法需要的数据
+    let [refertag] = await ctx.db.query('SELECT * FROM referencetag');    //////准备定位算法需要的数据
 
     let Locdata = await require('../CalLoc.js')(inputdata, refertag);          //////调S用定位模块
 
-    let  addSql = `INSERT INTO LocationLog(ID, JewerlyLocation, time) VALUES(null,?,?)`;
+    let  addSql = `INSERT INTO locationlog(id, jewerly_location, time) VALUES(null,?,?)`;
     let  addSqlParams = [ JSON.stringify(Locdata), (new Date()).toLocaleString( )];
     await ctx.db.query(addSql, addSqlParams);       //////定位结果存入数据库
 
     ///////更新珠宝数据表里的位置信息以及记录变动信息记录，速度很慢，需要改善数据库操作
     let movedata = {};
     let [JLupdate] = await ctx.db.query('SELECT * FROM jewerlydata');
-    var modSql = 'UPDATE jewerlydata SET Location = ? where EPC_Number = ?';
+    var modSql = 'UPDATE jewerlydata SET location = ? where epc_number = ?';
     for (let item of JLupdate) {
-      if ( Locdata[item.EPC_Number] ) {
-        if ( item.Location != Locdata[item.EPC_Number][0][0] ) {
-          movedata[item.EPC_Number] = {"movebefore" : item.Location , "moveafter" : Locdata[item.EPC_Number][0][0]}
+      if ( Locdata[item.epc_number] ) {
+        if ( item.location != Locdata[item.epc_number][0][0] ) {
+          movedata[item.epc_number] = {"movebefore" : item.location , "moveafter" : Locdata[item.epc_number][0][0]}
         }
-        item.Location = Locdata[item.EPC_Number][0][0];
+        item.location = Locdata[item.epc_number][0][0];
       } else {
-        if ( item.Location ) {
-          movedata[item.EPC_Number] = {"movebefore" : item.Location , "moveafter" : "" }
+        if ( item.location ) {
+          movedata[item.epc_number] = {"movebefore" : item.location , "moveafter" : "" }
         }
-        item.Location = "";
+        item.location = "";
       }
-      var modSqlParams = [ item.Location, item.EPC_Number] ;
+      var modSqlParams = [ item.location, item.epc_number] ;
       await ctx.db.query(modSql, modSqlParams);
     }
     ///////记录位置变动信息
     if( JSON.stringify(movedata) != '{}') {
-      let  addSql1 = `INSERT INTO movelog(ID, MoveData, time) VALUES(null,?,?)`;
+      let  addSql1 = `INSERT INTO movelog(id, move_data, time) VALUES(null,?,?)`;
       let  addSqlParams1 = [ JSON.stringify(movedata), (new Date()).toLocaleString( )];
       await ctx.db.query(addSql1, addSqlParams1);
     }
@@ -164,7 +163,7 @@ module.exports = {
     if ( tt.type === 2001 ) {
       console.log("数据推送")
       try {
-        let  addSql = `INSERT INTO TerminalData( Termdata, time, Type) VALUES(?,?,?)`;
+        let  addSql = `INSERT INTO terminaldata( term_data, time, type) VALUES(?,?,?)`;
         let  addSqlParams = [ JSON.stringify(tt), (new Date()).toLocaleString( ), "数据推送"];
         await ctx.db.query(addSql, addSqlParams);
         // ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "success" } } );      ///////////后面有redirect，返回无效
@@ -172,20 +171,22 @@ module.exports = {
         ctx.response.redirect('/terminal/tagloc')
       } catch (err) {
         ctx.response.body = JSON.stringify( { "type" : 2001, "data" : { "message" : "failure" } } );
+        console.log(err)
         // console.log(ctx.response.body)
       }
       // ctx.response.redirect('/terminal/tagloc')
     } else if ( tt.type === 8000 ) {
       console.log("心跳包")
-      console.log(tt);
+      // console.log(tt);
       try {
-        let  addSql = `INSERT INTO TerminalData( Termdata, time, Type) VALUES(?,?,?)`;
+        let  addSql = `INSERT INTO terminaldata( term_data, time, type) VALUES(?,?,?)`;
         let  addSqlParams = [ JSON.stringify(tt), (new Date()).toLocaleString( ), "心跳包"];
         await ctx.db.query(addSql, addSqlParams);
         ctx.response.body = JSON.stringify( { "type" : 8000, "data" : { "message" : "success" } } );
         // console.log(ctx.response.body)
       } catch (err) {
         ctx.response.body = JSON.stringify( { "type" : 8000, "data" : { "message" : "failure" } } );
+        console.log(err)
         // console.log(ctx.response.body)
       }
       
@@ -208,14 +209,14 @@ module.exports = {
         try {
           regdata.token = tt.token;
           //////更新的baseTinkerId版本及时间
-          if (regdata.baseTinkerId) { 
-            let temp = JSON.parse(regdata.baseTinkerId); 
+          if (regdata.basetinkerid) { 
+            let temp = JSON.parse(regdata.basetinkerid); 
             if(temp[temp.length - 1] != tt.baseTinkerId)  {
               temp.push( { "baseTinkerId": tt.baseTinkerId , "time" : (new Date()).toLocaleString( )});
-              regdata.baseTinkerId = JSON.stringify( temp );
+              regdata.basetinkerid = JSON.stringify( temp );
             }
           } else {
-            regdata.baseTinkerId = JSON.stringify( [ { "baseTinkerId": tt.baseTinkerId , "time" : (new Date()).toLocaleString( )} ] ) ;
+            regdata.basetinkerid = JSON.stringify( [ { "baseTinkerId": tt.baseTinkerId , "time" : (new Date()).toLocaleString( )} ] ) ;
           }
           //////更新注册ID时间
           if (regdata.RegisterTime) {
@@ -234,8 +235,8 @@ module.exports = {
             regdata.status = JSON.stringify( [ { "status": "上线" , "time" : (new Date()).toLocaleString( )} ] );
           }
           ///////存储注册信息
-          let  updateSql = `UPDATE terminalmanager SET baseTinkerId=?, token=?, RegisterTime=?, status=? WHERE mac=?`;
-          let  updateSqlParams = [ regdata.baseTinkerId, regdata.token, regdata.RegisterTime, regdata.status, tt.mac ];
+          let  updateSql = `UPDATE terminalmanager SET basetinkerid=?, token=?, registertime=?, status=? WHERE mac=?`;
+          let  updateSqlParams = [ regdata.basetinkerid, regdata.token, regdata.RegisterTime, regdata.status, tt.mac ];
           await ctx.db.query(updateSql, updateSqlParams);
           //////响应客户端
           ctx.response.body = JSON.stringify( { "type" : "注册ID响应状态码", "data" : { "message" : "success" } } );
@@ -255,7 +256,7 @@ module.exports = {
 
     let [ [ querysetdata ] ] = await ctx.db.query('SELECT * FROM settinglog order by time desc limit 1');
     let [ [ terminalregisterdata ] ] = await ctx.db.query('SELECT * FROM terminalmanager WHERE mac = "1CCAE33B63BA"');   /////////固定使用唯一一台终端的mac
-    let message = { "mac": terminalregisterdata.mac , "cmd": 2000 , "power": querysetdata.power , "readTime": querysetdata.periodSingle, "totalNumber": 1 }
+    let message = { "mac": terminalregisterdata.mac , "cmd": 2000 , "power": querysetdata.power , "readTime": querysetdata.period_single, "totalNumber": 1 }
     // console.log(JSON.stringify(message));
 
     client.push().setPlatform('ios', 'android')
@@ -270,6 +271,6 @@ module.exports = {
         // ctx.response.body = err;
     });
 
-    ctx.response.body = 8 * querysetdata.periodSingle * 1000 + 12000;   ////////前端页面盘点后封存时间
+    ctx.response.body = 8 * querysetdata.period_single * 1000 + 8000;   ////////前端页面盘点后封存时间（服务器8s，个人电脑12秒）
   } 
 }

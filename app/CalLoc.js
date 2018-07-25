@@ -4,12 +4,12 @@ const CalLoc = function (inputdata, refertag) {
         let temp = {};
         let weight = 0;
         for (let item_b of refertag) {
-            if(inputdata[item_b.EPC]) {
-                weight = Calweight(inputdata[item_a], inputdata[item_b.EPC]);
-                if (temp[`${item_b.Location}`]) {
-                    temp[`${item_b.Location}`] += weight;
+            if(inputdata[item_b.epc]) {
+                weight = Calweight(inputdata[item_a], inputdata[item_b.epc]);
+                if (temp[`${item_b.location}`]) {
+                    temp[`${item_b.location}`] += weight;
                 } else {
-                    temp[`${item_b.Location}`] = weight;
+                    temp[`${item_b.location}`] = weight;
                 }
             }
             
@@ -31,7 +31,8 @@ const Calweight = function (tag, refer) {
             }
         }
     }
-    weight = weight / power;
+    // weight = weight / power;
+    weight = weight / Math.sqrt(power);
     return weight;
 }
 

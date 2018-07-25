@@ -30,5 +30,5 @@ app.on('error', err => {
     console.dir(err)
 })
 
-app.listen(3000);
-console.log(`Server Jewerly-Manager listening on port 3000...`)
+app.listen(8022);
+console.log(`Server Jewerly-Manager listening on port 8022...`)

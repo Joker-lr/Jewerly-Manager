@@ -29,19 +29,19 @@
 
 <body>
 <div id="app">
-    <el-container style="height: 900px" v-loading="loading" 
+    <el-container style="height: 1060px" v-loading="loading" 
     element-loading-text="盘点中，请稍等" element-loading-background="rgba(0, 0, 0, 0.8)">
-        <el-header style="height: 100px; background-color: rgb(97, 190, 170); 
-        font-size: 50px; line-height: 100px">珠宝盘点展示
+        <el-header style="height: 80px; background-color: rgb(97, 190, 170); 
+        font-size: 50px; line-height: 80px">珠宝盘点展示
             <el-button type="primary" round style="font-size: 30px" @click="inventory()">盘点</el-button>
             <el-button type="primary" round style="font-size: 30px" @click="refresh()">刷新</el-button>
-            <a href="/qset.html"><el-button type="primary" round style="font-size: 30px">设置</el-button></a>
+            <a href="/qset.html" target="_blank"><el-button type="primary" round style="font-size: 30px">设置</el-button></a>
         </el-header>
         <el-container>
             <el-aside style="width:900px">
                 <el-container direction="vertical">
                 <el-container v-for="m in counter" style="margin-top: 5px">
-                    <el-aside width="200px" style="height: 400px; font-size: 60px; line-height: 400px;
+                    <el-aside width="200px" style="height: 490px; font-size: 60px; line-height: 490px;
                      background-color: rgb(0, 195, 255)">{{ m }}</el-aside>
                     <el-container>
                         <el-header style="height: 50px; font-size: 30px; line-height: 50px">总数量{{ totalnumbers[m] }}</el-header>
@@ -77,7 +77,7 @@
             </el-main>
         </el-container>
         <el-footer style="background-color: rgb(230, 166, 121); font-size: 30px; line-height: 60px"><a type="text" 
-            href="http://www.designchn.com/">成都德杉科技有限公司</a></el-footer>
+            href="http://www.designchn.com/" target="_blank">成都德杉科技有限公司</a></el-footer>
     </el-container>
 
 </div>
