@@ -20,6 +20,8 @@ const db = mysql.createPool({
   })
 app.context.db = db;
 
+app.context.interval = -1;  ///周期盘点全局变量（实际不是全局的）
+
 // 设置路由
 setRouter(app);
 

@@ -34,7 +34,7 @@
         <el-header style="height: 80px; background-color: rgb(97, 190, 170); 
         font-size: 50px; line-height: 80px">珠宝盘点展示
             <el-button type="primary" round style="font-size: 30px" @click="inventory()">盘点</el-button>
-            <el-button type="primary" round style="font-size: 30px" @click="refresh()">刷新</el-button>
+            <!-- <el-button type="primary" round style="font-size: 30px" @click="refresh()">刷新</el-button> -->
             <a href="/qset.html" target="_blank"><el-button type="primary" round style="font-size: 30px">设置</el-button></a>
         </el-header>
         <el-container>
@@ -105,7 +105,7 @@
             pictureurls: { "手镯": '/images/手镯.jpg', "项链": '/images/项链.jpg', "耳环": '/images/耳环.jpg', "戒指": '/images/戒指.jpg' }
         } ,
         methods: {
-            async epcdetail(m, o) {
+            epcdetail: async function(m, o) {
             this.$alert(this.exidata[m][o])
                 .catch(function(error) {
                         console.log(error)
@@ -116,11 +116,18 @@
             //   this.loading = true;
             //   setTimeout( () => {this.loading = false;}, 5000 )
             let _this = this;
+            let movedata_invbefore = _this.movedata;
             _this.$http.get('/terminal/queryemit')
                         .then( (response) => {
                             _this.loading = true;
-                            setTimeout( () => {_this.loading = false;}, response.body )
-                            // console.log(response)
+                            setTimeout( () => {
+                                _this.loading = false;
+                                // console.log( movedata_invbefore["0"]["id"] )
+                                // console.log( _this.movedata["0"]["id"] )
+                                if ( movedata_invbefore["0"]["id"] === _this.movedata["0"]["id"] ) {
+                                _this.$alert("物品未被移动！").catch( (err) => console.log(err) );
+                            }
+                            }, response.body )
                             })
                         .catch(function(error) {
                                     console.log(error)
@@ -128,106 +135,35 @@
                 
             } ,
 
-            async takeout(m, logunit) {
+            takeout : async function(m, logunit) {
                 let temp = logunit[m]["拿出"] ;
-                // this.$alert( "到:" + "\n" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
-                this.$msgbox( "到:" + "\n" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
+                let takeoutdetail = "到： " ;
+                for ( let item_a of Object.keys(temp) ) {
+                    takeoutdetail += item_a + "---";
+                    for ( let item_b of temp[item_a] ) {
+                        takeoutdetail += this.jewerlydata.find( (item) => {return item.epc_number === item_b }).type + "(" + item_b + ")， " ;
+                    }
+                    takeoutdetail += "； "
+                }
+                // this.$msgbox( "到:" + "<br/>" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
+                this.$alert(takeoutdetail).catch( (err) => console.log(err) );
             } ,
 
-            async putin(m, logunit) {
+            putin : async function(m, logunit) {
             let temp = logunit[m]["放入"] ;
-            // this.$alert( "从：" + "\n" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
-            this.$msgbox( "从：" + "\n" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
+            let putindetail = "从： " ;
+                for ( let item_a of Object.keys(temp) ) {
+                    putindetail += item_a + "---";
+                    for ( let item_b of temp[item_a] ) {
+                        putindetail += this.jewerlydata.find( (item) => {return item.epc_number === item_b }).type + "(" + item_b + ")，" ;
+                    }
+                    putindetail += "； "
+                }
+            this.$alert(putindetail).catch( (err) => console.log(err) );
+            // this.$msgbox( "从：" + "<br/>" + JSON.stringify(temp) ).catch( (error) => console.log(error) );
             } ,
 
             refresh: async function() {
-            //   this.$http.get('/terminal/exirefresh')
-            //         .then((response) => {
-            //             this.movedata = response.body["movedata"];
-            //             this.jewerlydata = response.body["jewerlydata"];
-            //             this.totalnumbers = response.body["totalnumbers"];
-            //             this.exidata = response.body["exidata"];
-            //             this.moverecords = response.body["moverecords"];
-            //             this.counter = Object.keys(this.exidata) ;
-
-            //             // //////////柜台展示数据整理及数量统计//////////
-            //             // let exidata = {};
-            //             // for ( let item of this.jewerlydata) {
-            //             //     if (item.Location) {
-            //             //        if (exidata[item.Location]) {
-            //             //         if (exidata[item.Location][item.Type]) {
-            //             //             exidata[item.Location][item.Type].push(item.EPC_Number);
-            //             //         } else {
-            //             //             exidata[item.Location][item.Type] = [ item.EPC_Number ];
-            //             //         }
-            //             //        } else {
-            //             //            exidata[item.Location] = {} ;
-            //             //            exidata[item.Location][item.Type] = [ item.EPC_Number ] ;
-            //             //        }
-            //             //     }
-            //             // }
-            //             // let temp = 0;
-            //             // for ( let item of Object.keys(exidata) ) {
-            //             //     temp = 0;
-            //             //     for ( let item_a of Object.keys( exidata[item] ) ) {
-            //             //         temp += exidata[item][item_a].length;
-            //             //     }
-            //             //     this.totalnumbers[item] = temp;
-            //             // }
-            //             // // console.log( exidata );
-            //             // this.exidata = exidata;
-
-            //             // //////////珠宝显示数据更新/////////
-            //             // this.counter = Object.keys(exidata) ;
-
-            //             // /////////变动记录数据整理//////////
-            //             // let moverecords = [];
-            //             // let moverecord = {};
-            //             // let itemMoveData = null;
-            //             // for (let item of this.movedata) {
-            //             //     moverecord = {} ;
-            //             //     itemMoveData = JSON.parse(item.MoveData);
-            //             //     for (let item_a of Object.keys( itemMoveData ) ) {
-            //             //         // console.log( itemMoveData[item_a] )
-            //             //         if ( itemMoveData[item_a].movebefore ) {
-            //             //             let tempafter = itemMoveData[item_a].moveafter || "离开柜台" ;
-            //             //             if (moverecord[ itemMoveData[item_a].movebefore ]) {
-            //             //                 if ( moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] ) {
-            //             //                     moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ].push( item_a );
-            //             //                 } else {
-            //             //                     moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
-            //             //                 }
-            //             //             } else {
-            //             //                 moverecord[ itemMoveData[item_a].movebefore ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
-            //             //                 moverecord[ itemMoveData[item_a].movebefore ]["拿出"][ tempafter ] = [ item_a ];
-            //             //             }
-            //             //             moverecord[ itemMoveData[item_a].movebefore ]["拿出总数"]++ ;
-            //             //         }
-
-            //             //         if ( itemMoveData[item_a].moveafter ) {
-            //             //             let tempbefore = itemMoveData[item_a].movebefore || "柜台外" ;
-            //             //             if (moverecord[ itemMoveData[item_a].moveafter ]) {
-            //             //                 if ( moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] ) {
-            //             //                     moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ].push( item_a );
-            //             //                 } else {
-            //             //                     moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
-            //             //                 }
-            //             //             } else {
-            //             //                 moverecord[ itemMoveData[item_a].moveafter ] = { "放入" : {}, "拿出" : {} , "拿出总数" : 0 , "放入总数" : 0 };
-            //             //                 moverecord[ itemMoveData[item_a].moveafter ]["放入"][ tempbefore ] = [ item_a ];
-            //             //             }
-            //             //             moverecord[ itemMoveData[item_a].moveafter ]["放入总数"]++ ;
-            //             //         }
-
-            //             //     }
-            //             //     moverecords.push(moverecord);
-            //             // }
-            //             // this.moverecords = moverecords ;
-            //         })
-            //         .catch(function(error) {
-            //             console.log(error)
-            //         })
-                    
             let _this = this;
             setInterval( () => {
                 _this.$http.get('/terminal/exirefresh')
@@ -242,8 +178,7 @@
                     .catch(function(error) {
                     console.log(error)
                     })
-            } , 1000)
-                    
+            } , 1000)    
             } ,
 
             convertUTCTimeToLocalTime: function (UTCDateString) {

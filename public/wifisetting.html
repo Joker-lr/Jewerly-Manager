@@ -27,6 +27,8 @@
 <script src="https://unpkg.com/vue/dist/vue.js"></script>
 <!-- import JavaScript -->
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<!-- import vue-resource -->
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
 
 <script>
     var app = new Vue({
@@ -45,13 +47,27 @@
                 value: 3,
                 label: 'wpa'
                 }] ,
-            ID: "unknown"
+            ID: "1CCAE33B63BA"
         } ,
         methods: {
             submitsettings: function() {
                 if(this.security && this.wifiname && this.password) {
                     let req = {"id": this.ID, "wifi": this.wifiname, "password": this.password, "security": this.security};
-                    alert(JSON.stringify(req));
+                    this.$http({
+                        url: 'http://jewelry.designchn.com/wifi_set.do' ,
+                        method: 'POST' ,
+                        data: req ,
+                        headers: {
+                            'Content-Type' : 'application/json' ,
+                            'appid' : 'xxx' ,
+                            'sign' : 'xxx'
+                        }
+                    }).then( (response) => {
+                        alert(response["data"]["msg"]);
+                    }).catch( (err) => {
+                        alert(err);
+                    })
+                    // alert(JSON.stringify(req));
                 } else {
                     alert("请输入账号密码，并且选择安全类型!")
                 }

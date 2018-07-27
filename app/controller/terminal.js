@@ -16,6 +16,12 @@ module.exports = {
     ctx.response.body = 'ok';
    
   } ,
+ //////////设置界面初始化////////////
+  queryinit: async function(ctx) {
+    // console.log("queryinit.-设置参数界面初始化");
+    let [ [ settingdata ] ] = await ctx.db.query("SELECT * FROM settinglog order by time desc limit 1");
+    ctx.response.body = settingdata ;
+  } ,
 
   ////////前端珠宝显示页面刷新/////////////
   exirefresh: async function(ctx) {
@@ -258,18 +264,40 @@ module.exports = {
     let [ [ terminalregisterdata ] ] = await ctx.db.query('SELECT * FROM terminalmanager WHERE mac = "1CCAE33B63BA"');   /////////固定使用唯一一台终端的mac
     let message = { "mac": terminalregisterdata.mac , "cmd": 2000 , "power": querysetdata.power , "readTime": querysetdata.period_single, "totalNumber": 1 }
     // console.log(JSON.stringify(message));
+    let  addSql = `INSERT INTO activitylog(id, activity_data, time) VALUES(null,?,?)`;
+    let  addSqlParams = [ JSON.stringify(message), (new Date()).toLocaleString( )];
+    await ctx.db.query(addSql, addSqlParams);
+    let [ [ activitydata ] ] = await ctx.db.query('SELECT * FROM activitylog order by time desc limit 1');
 
-    client.push().setPlatform('ios', 'android')
-    .setAudience(JPush.registration_id(terminalregisterdata.token))
-    .setMessage(JSON.stringify(message))
-    .setOptions(null, 60)
-    .send()
-    .then(function(result) {
-        console.log(result)
-    }).catch(function(err) {
-        console.log(err)
-        // ctx.response.body = err;
-    });
+    let start_id = querysetdata.id ;
+    let activity_id = activitydata.id ;
+
+    async function func() {
+
+      let [ [ querysetdata_last ] ] = await ctx.db.query('SELECT * FROM settinglog order by time desc limit 1');
+      let [ [ activitydata_last ] ] = await ctx.db.query('SELECT * FROM activitylog order by time desc limit 1');
+      if ( ( start_id != querysetdata_last.id ) || ( activity_id != activitydata_last.id) ) {
+        clearInterval( ctx.interval );                 /////有新的盘点参数设置或新的盘点就终止当前周期盘点
+      } else {
+        client.push().setPlatform('ios', 'android')
+        .setAudience(JPush.registration_id(terminalregisterdata.token))
+        .setMessage(JSON.stringify(message))
+        .setOptions(null, 60)
+        .send()
+        .then(function(result) {
+            console.log(result)
+        }).catch(function(err) {
+            console.log(err)
+        });
+      }
+      
+    }
+
+    func();
+
+    if ( querysetdata.query_on === 1 ) {
+      ctx.interval = setInterval(func, querysetdata.query_period * 1000);
+    }
 
     ctx.response.body = 8 * querysetdata.period_single * 1000 + 8000;   ////////前端页面盘点后封存时间（服务器8s，个人电脑12秒）
   } 

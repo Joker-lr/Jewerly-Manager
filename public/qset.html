@@ -94,35 +94,39 @@
         testdata: {}
     } ,
     methods: {
-      SettingCommit: function() {
-        this.$confirm('提交设置, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          console.log(this.form) ;
-          this.$message({
-            type: 'success',
-            message: '设置成功!'
-          });
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消设置'
-          });          
-        });
-        console.log(this.form);
-      } ,
+
       Putdata: async function() {
-            this.$http.post('/terminal/queryset', this.form)
-                .then((response) => {
-                    this.testdata = response.body;
-                    console.log(this.testdata)
-                })
-                .catch(function(error) {
-                    console.log(error)
-                })
+        var _this = this;
+        _this.form.value4 = _this.form.value4 > ( _this.form.value2 * 8 + 12 ) ? _this.form.value4 : ( _this.form.value2 * 8 + 12 ) ;
+        console.log(this.form.value4)
+        _this.$http.post('/terminal/queryset', _this.form)
+            .then((response) => {
+                _this.testdata = response.body;
+                console.log(_this.testdata);
+                _this.$alert("设置成功");
+            })
+            .catch(function(error) {
+                console.log(error)
+            }) ;
+        
         }
+
+    } ,
+
+    mounted(){
+        this.$http.get('/terminal/queryinit')
+            .then((response) => {
+                let settingdata = response.body ;
+                this.form.value1 = settingdata["power"] ;
+                this.form.value = "选项" + ( settingdata["session"] + 1 ) ;
+                this.form.value2 = settingdata["period_single"] ;
+                this.form.value3 = settingdata["query_on"] ? true : false ;
+                this.form.value4 = settingdata["query_period"] ;
+                // console.log(settingdata);
+            })
+            .catch(function(error) {
+                                    console.log(error)
+                            })
     }
     })
 </script>
